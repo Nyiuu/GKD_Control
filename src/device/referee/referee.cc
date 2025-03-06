@@ -119,4 +119,9 @@ namespace Device
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
     }
+
+    void Dji_referee::task_ui() {
+        UI_task(&base_);
+        custom_ui_task(&base_);
+    }
 }  // namespace Device

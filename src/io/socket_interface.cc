@@ -13,7 +13,8 @@ namespace IO
             memset(buffer, 0, sizeof(buffer));
             sockaddr_in cli_addr;
             socklen_t cli_addr_len = sizeof(cli_addr);
-            auto n = recvfrom(sockfd, buffer, 256, MSG_WAITALL, (sockaddr *)&cli_addr, &cli_addr_len);
+            auto n =
+                recvfrom(sockfd, buffer, 256, MSG_WAITALL, (sockaddr *)&cli_addr, &cli_addr_len);
             if (n > 0) {
                 uint8_t header = buffer[0];
                 if (clients.count(header) == 0) {
@@ -44,7 +45,9 @@ namespace IO
         }
     }
 
-    Server_socket_interface::Server_socket_interface(std::string name) : port_num(11451), name(name) {
+    Server_socket_interface::Server_socket_interface(std::string name)
+        : port_num(11451),
+          name(name) {
         // NOTE: read this https://www.linuxhowtos.org/C_C++/socket.htm
         sockfd = socket(AF_INET, SOCK_DGRAM, 0);
         if (sockfd < 0) {

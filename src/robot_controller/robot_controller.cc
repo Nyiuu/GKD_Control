@@ -50,6 +50,7 @@ namespace Robot
         threads.emplace_back(&Config::GimbalType::task, &gimbal);
         threads.emplace_back(&Chassis::Chassis::task, &chassis);
         threads.emplace_back(&Device::Dji_referee::task, &referee);
+        threads.emplace_back(&Device::Dji_referee::task_ui, &referee);
         IFDEF(CONFIG_SENTRY, threads.emplace_back(&Gimbal::GimbalT::task, &gimbal_left));
         IFDEF(CONFIG_SENTRY, threads.emplace_back(&Gimbal::GimbalT::task, &gimbal_right));
         // vision_thread = std::make_unique<std::thread>(&Device::Cv_controller::task,
