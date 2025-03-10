@@ -62,15 +62,14 @@ namespace Gimbal
 
             0.f >> yaw_relative_pid >> yaw_motor;
             0.f >> pitch_absolute_pid >> pitch_motor;
-            // LOG_INFO("yaw_v : %6f %6f %6f\n", imu.yaw_rate, imu.pitch_rate, imu.roll_rate);
+            // LOG_INFO(
+            //     "yaw_v : %6f %6f %6f %6d\n", imu.yaw_rate, imu.pitch_rate, imu.roll_rate,
+            //     yaw_motor.motor_measure_.ecd);
 
             if (fabs(yaw_relative) < Config::GIMBAL_INIT_EXP && fabs(imu.pitch) < Config::GIMBAL_INIT_EXP) {
                 init_stop_times += 1;
             } else {
-                // hero && standard
-                // *yaw_set = imu.yaw;
-                // sentry
-                *yaw_set = robot_set->gimbal_sentry_yaw;
+                MUXDEF(CONFIG_SENTRY, *yaw_set = robot_set->gimbal_sentry_yaw, *yaw_set = imu.yaw);
                 *pitch_set = 0;
                 init_stop_times = 0;
             }
@@ -83,7 +82,7 @@ namespace Gimbal
         std::jthread shoot_thread(&Shoot::Shoot::task, &shoot);
         while (true) {
             update_data();
-            LOG_INFO("yaw set %f, imu yaw %f\n", *yaw_set, fake_yaw_abs);
+            // LOG_INFO("yaw set %f, imu yaw %f\n", *yaw_set, fake_yaw_abs);
             if (robot_set->mode == Types::ROBOT_MODE::ROBOT_NO_FORCE) {
                 yaw_motor.give_current = 0;
                 pitch_motor.give_current = 0;

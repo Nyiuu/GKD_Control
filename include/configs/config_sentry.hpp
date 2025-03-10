@@ -21,6 +21,8 @@ namespace Config
                                                                             { "/dev/IMU_LEFT", 115200, 2000 },
                                                                             { "/dev/IMU_BIG_YAW", 115200, 2000 } };
 
+    const std::string rc_controller_serial = "/dev/IMU_BIG_YAW";
+
     const Chassis::ChassisConfig chassis_config = {
         .wheels_config = {
             Hardware::DJIMotorConfig{3508, "CAN_CHASSIS", 1, 0.075},

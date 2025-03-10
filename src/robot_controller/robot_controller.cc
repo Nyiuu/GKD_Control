@@ -7,7 +7,7 @@ namespace Robot
 {
 
     Robot_ctrl::Robot_ctrl()
-        : rc_controller("/dev/IMU_BIG_YAW"),
+        : rc_controller(Config::rc_controller_serial),
           gimbal(Config::gimbal_config),
           chassis(Config::chassis_config) IFDEF(
               CONFIG_SENTRY,
@@ -23,10 +23,10 @@ namespace Robot
         // NOTE: register motors here
 
         // cv_controller_.init(robot_set);
-        rc_controller.enable();
+        rc_controller.enable(robot_set);
         // super_cap.init("Hero_Chassis");
 
-        // chassis.init(robot_set);
+        chassis.init(robot_set);
         gimbal.init(robot_set);
         IFDEF(CONFIG_SENTRY, gimbal_left.init(robot_set));
         IFDEF(CONFIG_SENTRY, gimbal_right.init(robot_set));
@@ -45,9 +45,9 @@ namespace Robot
 
     void Robot_ctrl::start() {
         threads.emplace_back(&Config::GimbalType::task, &gimbal);
+        threads.emplace_back(&Chassis::Chassis::task, &chassis);
         IFDEF(CONFIG_SENTRY, threads.emplace_back(&Gimbal::GimbalT::task, &gimbal_left));
         IFDEF(CONFIG_SENTRY, threads.emplace_back(&Gimbal::GimbalT::task, &gimbal_right));
-        // threads.emplace_back(&Chassis::Chassis::task, &chassis);
         // vision_thread = std::make_unique<std::thread>(&Device::Cv_controller::task, &cv_controller_);
     }
 

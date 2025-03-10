@@ -20,6 +20,8 @@ namespace Config
 
     const std::vector<std::tuple<std::string, int, int>> SerialInitList = { { "/dev/IMU_HERO", 115200, 2000 } };
 
+    const std::string rc_controller_serial = "/dev/IMU_HERO";
+
     const Chassis::ChassisConfig chassis_config = {
         .wheels_config = {
             Hardware::DJIMotorConfig{3508, "Hero_Chassis", 1, 0.075},
@@ -28,7 +30,7 @@ namespace Config
             Hardware::DJIMotorConfig{3508, "Hero_Chassis", 4, 0.075}
         },
         .chassis_follow_gimbal_pid_config = {
-            .kp =           4.0f,
+            .kp =           2.0f,
             .ki =           0.0f,
             .kd =           10.0f,
             .max_out =      6.0f,
@@ -86,7 +88,7 @@ namespace Config
         .gimbal_motor_dir = 1.0,
         .gimbal_id = 1,
         .ControlTime = 1,
-        .YawOffSet = 7114,
+        .YawOffSet = 2114,
         .shoot_config = {
             .left_friction_motor_config = Hardware::DJIMotorConfig{3508, "Hero_Chassis", 1, 0.075},
             .right_friction_motor_config = Hardware::DJIMotorConfig{3508, "Hero_Chassis", 1, 0.075},

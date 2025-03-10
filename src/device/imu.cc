@@ -26,7 +26,7 @@ namespace Device
         yaw_rate = pkg.yaw_v * (M_PIf / 180) / 1000;
         pitch_rate = pkg.pitch_v * (M_PIf / 180) / 1000;
         roll_rate = pkg.roll_v * (M_PIf / 180) / 1000;
-        // if (serial_name.compare("/dev/IMU_BIG_YAW") == 0)
+        // if (serial_name.compare("/dev/IMU_HERO") == 0)
         //     LOG_INFO("imu %.6f %.6f %.6f\n", pkg.yaw, pkg.pitch, pkg.yaw_v);
         update_time();
     }
