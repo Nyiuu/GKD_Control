@@ -1,10 +1,9 @@
 #include "gimbal/gimbal_temp.hpp"
 
-#include "utils.hpp"
-
-#include CONFIGHPP
 #include "gimbal/gimbal_config.hpp"
+#include "robot_type_config.hpp"
 #include "user_lib.hpp"
+#include "utils.hpp"
 
 namespace Gimbal
 {
@@ -38,11 +37,11 @@ namespace Gimbal
 
         yaw_relative_pid = Pid::PidRad(config.yaw_relative_pid_config, yaw_relative);
 
-#ifdef SENTRY
-        yaw_absolute_pid = Pid::PidRad(config.yaw_absolute_pid_config, fake_yaw_abs) >> Pid::Invert(-1);
-#else
-        yaw_absolute_pid = Pid::PidRad(config.yaw_absolute_pid_config, imu.yaw) >> Pid::Invert(-1);
-#endif
+        MUXDEF(
+            CONFIG_SENTRY,
+            yaw_absolute_pid = Pid::PidRad(config.yaw_absolute_pid_config, fake_yaw_abs) >> Pid::Invert(-1),
+            yaw_absolute_pid = Pid::PidRad(config.yaw_absolute_pid_config, imu.yaw) >> Pid::Invert(-1));
+        ;
 
         pitch_absolute_pid = Pid::PidRad(config.pitch_absolute_pid_config, imu.pitch);
 
@@ -54,7 +53,7 @@ namespace Gimbal
     void GimbalT::init_task() {
         while (imu.offline() || yaw_motor.offline() || pitch_motor.offline()) {
             UserLib::sleep_ms(Config::GIMBAL_CONTROL_TIME);
-            LOG_INFO("offline %d %d %d\n",imu.offline() , yaw_motor.offline() , pitch_motor.offline());
+            LOG_INFO("offline %d %d %d\n", imu.offline(), yaw_motor.offline(), pitch_motor.offline());
         }
         while (!inited) {
             update_data();

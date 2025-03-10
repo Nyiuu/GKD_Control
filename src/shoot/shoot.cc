@@ -1,20 +1,25 @@
 #include "shoot.hpp"
 
-#include CONFIGHPP
-#include "user_lib.hpp"
 #include "pid_controller.hpp"
+#include "robot_type_config.hpp"
+#include "user_lib.hpp"
 
 namespace Shoot
 {
 
-    Shoot::Shoot(const ShootConfig& config) : friction_ramp(Config::FRICTION_ADD_SPEED, Config::SHOOT_CONTROL_TIME * 1e-3f), left_friction(config.left_friction_motor_config),
-            right_friction(config.right_friction_motor_config), trigger(config.trigger_motor_config) {
-        left_friction.setCtrl(Pid::PidPosition(config.friction_speed_pid_config, left_friction.data_.output_linear_velocity));
-        right_friction.setCtrl(Pid::PidPosition(config.friction_speed_pid_config, right_friction.data_.output_linear_velocity));
+    Shoot::Shoot(const ShootConfig& config)
+        : friction_ramp(Config::FRICTION_ADD_SPEED, Config::SHOOT_CONTROL_TIME * 1e-3f),
+          left_friction(config.left_friction_motor_config),
+          right_friction(config.right_friction_motor_config),
+          trigger(config.trigger_motor_config) {
+        left_friction.setCtrl(
+            Pid::PidPosition(config.friction_speed_pid_config, left_friction.data_.output_linear_velocity));
+        right_friction.setCtrl(
+            Pid::PidPosition(config.friction_speed_pid_config, right_friction.data_.output_linear_velocity));
         trigger.setCtrl(Pid::PidPosition(config.trigger_speed_pid_config, trigger.data_.output_angular_velocity));
     }
 
-    void Shoot::init(const std::shared_ptr<Robot::Robot_set> &robot) {
+    void Shoot::init(const std::shared_ptr<Robot::Robot_set>& robot) {
         robot_set = robot;
     }
 

@@ -1,7 +1,7 @@
 #include "chassis/chassis.hpp"
 
 #include "chassis_config.hpp"
-#include CONFIGHPP
+#include "robot_type_config.hpp"
 #include "user_lib.hpp"
 
 namespace Chassis

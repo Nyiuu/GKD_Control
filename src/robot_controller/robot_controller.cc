@@ -1,6 +1,7 @@
 #include "robot_controller.hpp"
-#include CONFIGHPP
+
 #include "io.hpp"
+#include "robot_type_config.hpp"
 
 namespace Robot
 {
@@ -8,7 +9,11 @@ namespace Robot
     Robot_ctrl::Robot_ctrl()
         : rc_controller("/dev/IMU_BIG_YAW"),
           gimbal(Config::gimbal_config),
-          chassis(Config::chassis_config) {
+          chassis(Config::chassis_config) IFDEF(
+              CONFIG_SENTRY,
+              ,
+              gimbal_left(Config::gimbal_left_config),
+              gimbal_right(Config::gimbal_right_config)) {
         robot_set = std::make_shared<Robot_set>();
     }
 
@@ -23,11 +28,15 @@ namespace Robot
 
         // chassis.init(robot_set);
         gimbal.init(robot_set);
+        IFDEF(CONFIG_SENTRY, gimbal_left.init(robot_set));
+        IFDEF(CONFIG_SENTRY, gimbal_right.init(robot_set));
 
         // start DJIMotorManager thread
         Hardware::DJIMotorManager::start();
 
         threads.emplace_back(&Config::GimbalType::init_task, &gimbal);
+        IFDEF(CONFIG_SENTRY, threads.emplace_back(&Gimbal::GimbalT::init_task, &gimbal_left));
+        IFDEF(CONFIG_SENTRY, threads.emplace_back(&Gimbal::GimbalT::init_task, &gimbal_right));
     }
 
     void Robot_ctrl::init_join() {
@@ -36,6 +45,8 @@ namespace Robot
 
     void Robot_ctrl::start() {
         threads.emplace_back(&Config::GimbalType::task, &gimbal);
+        IFDEF(CONFIG_SENTRY, threads.emplace_back(&Gimbal::GimbalT::task, &gimbal_left));
+        IFDEF(CONFIG_SENTRY, threads.emplace_back(&Gimbal::GimbalT::task, &gimbal_right));
         // threads.emplace_back(&Chassis::Chassis::task, &chassis);
         // vision_thread = std::make_unique<std::thread>(&Device::Cv_controller::task, &cv_controller_);
     }
@@ -52,13 +63,12 @@ namespace Robot
         for (auto& [name, baud_rate, simple_timeout] : Config::SerialInitList) {
             IO::io<SERIAL>.insert(name, baud_rate, simple_timeout);
         }
-        for(auto & name : Config :: SocketInitList) {
+        for (auto& name : Config ::SocketInitList) {
             IO::io<SOCKET>.insert(name);
-            IO::io<SOCKET>[name]->register_callback<Vison_control>([this](const Vison_control& vc){
+            IO::io<SOCKET>[name] -> register_callback<Vison_control>([this](const Vison_control& vc) {
                 LOG_INFO("%f %f\n", vc.yaw_set, vc.pitch_set);
                 robot_set->gimbalT_1_yaw_set += vc.yaw_set;
             });
         }
-
     }
 };  // namespace Robot

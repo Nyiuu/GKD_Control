@@ -9,7 +9,7 @@ namespace Gimbal
     class GimbalSentry
     {
        public:
-        GimbalSentry(const std::pair<GimbalConfig,GimbalConfig>& config);
+        GimbalSentry(const GimbalConfig& config);
         ~GimbalSentry() = default;
         void init(const std::shared_ptr<Robot::Robot_set>& robot);
         void init_task();
@@ -18,6 +18,7 @@ namespace Gimbal
 
        public:
         std::shared_ptr<Robot::Robot_set> robot_set;
+        GimbalConfig config;
         bool inited = false;
 
         Device::IMU imu;
@@ -35,7 +36,5 @@ namespace Gimbal
         fp32* yaw_set;
 
         int init_stop_times = 0;
-
-        GimbalT gimbal_left,gimbal_right;
     };
 }  // namespace Gimbal

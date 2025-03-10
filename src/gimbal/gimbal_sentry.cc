@@ -1,40 +1,41 @@
 #include "gimbal/gimbal_sentry.hpp"
 
-#include CONFIGHPP
-#include "user_lib.hpp"
 #include <future>
+
+#include "robot_type_config.hpp"
+#include "user_lib.hpp"
 
 namespace Gimbal
 {
-    GimbalSentry::GimbalSentry(const std::pair<GimbalConfig,GimbalConfig>& config) : imu("/dev/IMU_BIG_YAW"), yaw_motor("CAN_BULLET", 1), gimbal_left(config.first), gimbal_right(config.second) {
+    GimbalSentry::GimbalSentry(const GimbalConfig& config)
+        : config(config),
+          imu(config.imu_serial_port),
+          yaw_motor("CAN_BULLET", 1)
+
+    {
     }
 
-    void GimbalSentry::init(const std::shared_ptr<Robot::Robot_set> &robot) {
+    void GimbalSentry::init(const std::shared_ptr<Robot::Robot_set>& robot) {
         robot_set = robot;
 
-        yaw_absolute_pid = Pid::PidRad(Config::GIMBAL_9025_YAW_ABSOLUTE_PID_CONFIG, imu.yaw) >> Pid::Invert(-1);
-        yaw_relative_pid = Pid::PidRad(Config::GIMBAL_9025_YAW_RELATIVE_PID_CONFIG, yaw_relative);
+        yaw_absolute_pid = Pid::PidRad(config.yaw_absolute_pid_config, imu.yaw) >> Pid::Invert(-1);
+        yaw_relative_pid = Pid::PidRad(config.yaw_relative_pid_config, yaw_relative);
         yaw_relative_with_two_head_pid =
             Pid::PidRad(Config::GIMBAL_9025_YAW_RELATIVE_PID_CONFIG, yaw_relative_with_two_head) >> Pid::Invert(-1);
 
-        yaw_motor.setCtrl(Pid::PidPosition(Config::YAW_9025_SPEED_PID_CONFIG, imu.yaw_rate));
+        yaw_motor.setCtrl(Pid::PidPosition(config.yaw_rate_pid_config, imu.yaw_rate));
         yaw_set = &robot_set->gimbal_sentry_yaw_set;
 
         imu.enable();
         yaw_motor.enable();
-
-        gimbal_left.init(robot);
-        gimbal_right.init(robot);
     }
 
     void GimbalSentry::init_task() {
-        // std::jthread thread_left{&GimbalT::init_task, &gimbal_left};
-        std::jthread thread_right{&GimbalT::init_task, &gimbal_right};
         while (!inited) {
             update_data();
             0.f >> yaw_relative_pid >> yaw_motor;
             //  LOG_INFO("big yaw %f %f\n", yaw_motor_speed,yaw_relative);
-            LOG_INFO("yaw r %f\n",yaw_relative);
+            LOG_INFO("yaw r %f\n", yaw_relative);
             if (fabs(yaw_relative) < Config::GIMBAL_INIT_EXP) {
                 init_stop_times += 1;
             } else {
@@ -47,8 +48,6 @@ namespace Gimbal
     }
 
     [[noreturn]] void GimbalSentry::task() {
-        // std::thread thread_left{&GimbalT::task, &gimbal_left};
-        std::thread thread_right{&GimbalT::task, &gimbal_right};
         while (true) {
             update_data();
             switch (robot_set->mode) {

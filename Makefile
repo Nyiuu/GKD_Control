@@ -22,7 +22,6 @@ CPPFLAGS += -I$(WORK_DIR)/include/device
 
 # NOTE: turn on debug here
 CPPFLAGS += -D__DEBUG__
-CPPFLAGS += -DCONFIGHPP=\"config_hero.hpp\"
 
 # FIXME: imtui dependency linking
 CPPFLAGS += -I "./3rdparty/include"
@@ -33,12 +32,22 @@ LDFLAGS += -lm -lpthread -ldl -lrt -lserial
 #LDFLAGS = `pkg-config sdl --libs`
 
 SRC = $(wildcard src/*.cc) $(wildcard src/**/*.cc)
+INCLUDES = $(wildcard include/*.hpp) $(wildcard include/**/*.hpp)
 OBJ = $(addprefix $(BUILD_DIR)/, $(addsuffix .o, $(basename $(SRC))))
 BIN = rx78-2
 
-.PHONY: all clean
+.PHONY: all clean sentry hero infantry
 
 all: dirs $(BIN)
+
+sentry: CPPFLAGS += -DCONFIG_SENTRY=1
+sentry: dirs $(BIN)
+
+hero: CPPFLAGS += -DCONFIG_HERO=1
+hero: dirs $(BIN)
+
+infantry: CPPFLAGS += -DCONFIG_INFANTRY=1
+infantry: dirs $(BIN)
 
 dirs:
 	@echo -e + $(BLUE)MKDIR$(END) $(BUILD_DIR)
@@ -59,18 +68,10 @@ run: all
 clean-build: clean
 	@make all -j8
 
-mini-pc:
-	@sudo docker exec --workdir /home/zzlinus/dev/cpp/NeoRMControl_OneForALL a30b5228ace8 make clean-build
-	sshpass -p 1 scp build/rx78-2 gkd@192.168.1.204:/home/gkd/dev
+to-minipc:
+	@sudo docker exec --workdir /home/zzlinus/dev/cpp/NeoRMControl_OneForALL a30b5228ace8 make sentry -j8
+	sshpass -p 1 scp build/rx78-2 gkd@192.168.1.211:/home/gkd/dev
 	#sshpass -p 1 ssh gkd@192.168.1.4 "/home/gkd/dev/rx78-2"
-
-mini-pc-os-deps:
-	sshpass -p 1 ssh root@192.168.0.114 "ip link set CAN_LEFT_HEAD up type can bitrate 1000000"
-	sshpass -p 1 ssh root@192.168.0.114 "ip link set CAN_RIGHT_HEAD up type can bitrate 1000000"
-	sshpass -p 1 ssh root@192.168.0.114 "ip link set CAN_CHASSIS up type can bitrate 1000000"
-	sshpass -p 1 ssh root@192.168.0.114 "chmod 666 /dev/IMU_LEFT"
-	sshpass -p 1 ssh root@192.168.0.114 "chmod 666 /dev/IMU_RIGHT"
-	sshpass -p 1 ssh root@192.168.0.114 "chmod 666 /dev/IMU_BIG_YAW"
 
 serial: $(SERIAL_DIR)
 	@$(MAKE) -C $< -j8
@@ -81,7 +82,7 @@ $(BIN): $(OBJ) serial
 	@echo -e + $(GREEN)LN$(END) $(BUILD_DIR)/$(BIN)
 	@$(CC) -o $(BUILD_DIR)/$(BIN) $(OBJ) $(CPPFLAGS) $(LDFLAGS)
 
-$(BUILD_DIR)/%.o: %.cc
+$(BUILD_DIR)/%.o: %.cc $(INCLUDES)
 	@mkdir -p $(dir $@) 
 	@echo -e + $(GREEN)CC$(END) $<
 	@$(CC) -o $@ -c $< $(CPPFLAGS)

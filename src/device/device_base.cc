@@ -1,5 +1,5 @@
 #include "device/deviece_base.hpp"
-#include CONFIGHPP
+#include "robot_type_config.hpp"
 
 using namespace std::chrono;
 

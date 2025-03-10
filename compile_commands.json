@@ -12,17 +12,43 @@
       "-I/home/zzlinus/dev/cpp/NeoRMControl_OneForALL/include/chassis",
       "-I/home/zzlinus/dev/cpp/NeoRMControl_OneForALL/include/device",
       "-D__DEBUG__",
-      "-DCONFIGHPP=\"config_hero.hpp\"",
+      "-DCONFIG_SENTRY=0",
       "-I",
       "./3rdparty/include",
       "-I",
       "/home/zzlinus/dev/3rdparty/stm32h",
       "-o",
-      "/home/zzlinus/dev/cpp/NeoRMControl_OneForALL/build/src/main.o",
-      "src/main.cc"
+      "/home/zzlinus/dev/cpp/NeoRMControl_OneForALL/build/src/gimbal/gimbal_temp.o",
+      "src/gimbal/gimbal_temp.cc"
     ],
     "directory": "/home/zzlinus/dev/cpp/NeoRMControl_OneForALL",
-    "file": "/home/zzlinus/dev/cpp/NeoRMControl_OneForALL/src/main.cc",
-    "output": "/home/zzlinus/dev/cpp/NeoRMControl_OneForALL/build/src/main.o"
+    "file": "/home/zzlinus/dev/cpp/NeoRMControl_OneForALL/src/gimbal/gimbal_temp.cc",
+    "output": "/home/zzlinus/dev/cpp/NeoRMControl_OneForALL/build/src/gimbal/gimbal_temp.o"
+  },
+  {
+    "arguments": [
+      "/sbin/g++",
+      "-c",
+      "-std=c++20",
+      "-O0",
+      "-g",
+      "-I/home/zzlinus/dev/cpp/NeoRMControl_OneForALL/include",
+      "-I/home/zzlinus/dev/cpp/NeoRMControl_OneForALL/include/gimbal",
+      "-I/home/zzlinus/dev/cpp/NeoRMControl_OneForALL/include/configs",
+      "-I/home/zzlinus/dev/cpp/NeoRMControl_OneForALL/include/chassis",
+      "-I/home/zzlinus/dev/cpp/NeoRMControl_OneForALL/include/device",
+      "-D__DEBUG__",
+      "-DCONFIG_SENTRY=0",
+      "-I",
+      "./3rdparty/include",
+      "-I",
+      "/home/zzlinus/dev/3rdparty/stm32h",
+      "-o",
+      "/home/zzlinus/dev/cpp/NeoRMControl_OneForALL/build/src/robot_controller/robot_controller.o",
+      "src/robot_controller/robot_controller.cc"
+    ],
+    "directory": "/home/zzlinus/dev/cpp/NeoRMControl_OneForALL",
+    "file": "/home/zzlinus/dev/cpp/NeoRMControl_OneForALL/src/robot_controller/robot_controller.cc",
+    "output": "/home/zzlinus/dev/cpp/NeoRMControl_OneForALL/build/src/robot_controller/robot_controller.o"
   }
 ]
