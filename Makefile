@@ -19,6 +19,7 @@ CPPFLAGS += -I$(WORK_DIR)/include/gimbal
 CPPFLAGS += -I$(WORK_DIR)/include/configs
 CPPFLAGS += -I$(WORK_DIR)/include/chassis
 CPPFLAGS += -I$(WORK_DIR)/include/device
+CPPFLAGS += -I$(WORK_DIR)/include/device/referee
 
 # NOTE: turn on debug here
 CPPFLAGS += -D__DEBUG__
@@ -31,8 +32,8 @@ LDFLAGS += -lm -lpthread -ldl -lrt -lserial
 
 #LDFLAGS = `pkg-config sdl --libs`
 
-SRC = $(wildcard src/*.cc) $(wildcard src/**/*.cc)
-INCLUDES = $(wildcard include/*.hpp) $(wildcard include/**/*.hpp)
+SRC = $(wildcard src/*.cc) $(wildcard src/**/*.cc) $(wildcard src/**/**/*.cc)
+INCLUDES = $(wildcard include/*.hpp) $(wildcard include/**/*.hpp) $(wildcard include/**/**/*.hpp)
 OBJ = $(addprefix $(BUILD_DIR)/, $(addsuffix .o, $(basename $(SRC))))
 BIN = rx78-2
 

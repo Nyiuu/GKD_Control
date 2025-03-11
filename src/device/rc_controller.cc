@@ -22,7 +22,7 @@ namespace Device
     }
 
     void Rc_Controller::unpack(const Types::ReceivePacket_RC_CTRL &pkg) {
-        LOG_INFO("rc controller ch1 %d\n", pkg.ch2);
+        // LOG_INFO("rc controller ch1 %d\n", pkg.ch2);
         robot_set->vx_set = ((float)pkg.ch3 / 660) * 3;
         robot_set->vy_set = ((float)pkg.ch2 / 660) * 3;
         robot_set->gimbalT_1_yaw_set += ((float)pkg.ch0 / 660) / 200;

@@ -1,6 +1,7 @@
 #include "robot_controller.hpp"
 
 #include "io.hpp"
+#include "referee.hpp"
 #include "robot_type_config.hpp"
 
 namespace Robot
@@ -46,6 +47,7 @@ namespace Robot
     void Robot_ctrl::start() {
         threads.emplace_back(&Config::GimbalType::task, &gimbal);
         threads.emplace_back(&Chassis::Chassis::task, &chassis);
+        threads.emplace_back(&Device::Dji_referee::task, &referee);
         IFDEF(CONFIG_SENTRY, threads.emplace_back(&Gimbal::GimbalT::task, &gimbal_left));
         IFDEF(CONFIG_SENTRY, threads.emplace_back(&Gimbal::GimbalT::task, &gimbal_right));
         // vision_thread = std::make_unique<std::thread>(&Device::Cv_controller::task, &cv_controller_);

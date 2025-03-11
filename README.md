@@ -12,7 +12,7 @@
 Using bash like command line to build
 - GNU/Make
 ```
-$ make  -j8
+$ make $(robot_type) -j8
 $ make run
 ```
 

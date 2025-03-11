@@ -8,6 +8,7 @@
 #include "gimbal/gimbal_sentry.hpp"
 #include "gimbal/gimbal_temp.hpp"
 #include "rc_controller.hpp"
+#include "referee.hpp"
 #include "robot.hpp"
 #include "robot_type_config.hpp"
 #include "serial_interface.hpp"
@@ -36,6 +37,7 @@ namespace Robot
 
         Device::Rc_Controller rc_controller;
         Device::Cv_controller cv_controller_;
+        Device::Dji_referee referee;
         Chassis::Chassis chassis;
         Config::GimbalType gimbal;
         IFDEF(CONFIG_SENTRY, Gimbal::GimbalT gimbal_left, gimbal_right);
