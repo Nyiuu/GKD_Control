@@ -22,8 +22,6 @@ namespace Gimbal
         void update_data();
 
        public:
-        bool inited = false;
-
         uint32_t init_stop_times = 0;
         uint32_t gimbal_id = 0;
 

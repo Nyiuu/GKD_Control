@@ -3,6 +3,7 @@
 #include <future>
 
 #include "robot_type_config.hpp"
+#include "types.hpp"
 #include "user_lib.hpp"
 
 namespace Gimbal
@@ -31,18 +32,19 @@ namespace Gimbal
     }
 
     void GimbalSentry::init_task() {
-        while (!inited) {
+        while (robot_set->inited != Types::Init_status::INIT_FINISH) {
             update_data();
             0.f >> yaw_relative_pid >> yaw_motor;
-            //  LOG_INFO("big yaw %f %f\n", yaw_motor_speed,yaw_relative);
-            LOG_INFO("yaw r %f\n", yaw_relative);
+            // LOG_INFO("big yaw %d %f\n", yaw_motor.motor_measure.ecd, yaw_relative);
+            // LOG_INFO("yaw r %f\n", yaw_relative);
             if (fabs(yaw_relative) < Config::GIMBAL_INIT_EXP) {
                 init_stop_times += 1;
             } else {
                 *yaw_set = imu.yaw;
                 init_stop_times = 0;
             }
-            inited = init_stop_times >= Config::GIMBAL_INIT_STOP_TIME;
+            if (init_stop_times >= Config::GIMBAL_INIT_STOP_TIME)
+                robot_set->inited |= 1 << 2;
             UserLib::sleep_ms(Config::GIMBAL_CONTROL_TIME);
         }
     }

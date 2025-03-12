@@ -345,7 +345,7 @@ namespace Config
     constexpr fp32 GIMBAL2_YAW_OFFSET_ECD = 3366;
     constexpr fp32 GIMBAL2_PITCH_OFFSET_ECD = 3985;
 
-    constexpr fp32 GIMBAL3_YAW_OFFSET_ECD = 48041;
+    constexpr fp32 GIMBAL3_YAW_OFFSET_ECD = 14300;
     constexpr fp32 GIMBAL3_PITCH_OFFSET_ECD = 3985;
 #else
     constexpr fp32 GIMBAL_YAW_OFFSET_ECD = 5424;

@@ -4,6 +4,7 @@
 
 #include <cstdint>
 
+#include "macro_helpers.hpp"
 #include "string"
 
 // NOTE: defines and type defines
@@ -81,6 +82,11 @@ namespace Types
         SPIN_L,
         STOP_X,
         STOP_Y,
+    };
+
+    enum Init_status
+    {
+        INIT_FINISH = MUXDEF(CONFIG_SENTRY, 0x7, 0x1),
     };
 
     typedef struct

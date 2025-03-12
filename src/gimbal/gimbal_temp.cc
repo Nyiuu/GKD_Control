@@ -2,6 +2,7 @@
 
 #include "gimbal/gimbal_config.hpp"
 #include "robot_type_config.hpp"
+#include "types.hpp"
 #include "user_lib.hpp"
 #include "utils.hpp"
 
@@ -55,7 +56,7 @@ namespace Gimbal
             UserLib::sleep_ms(Config::GIMBAL_CONTROL_TIME);
             LOG_INFO("offline %d %d %d\n", imu.offline(), yaw_motor.offline(), pitch_motor.offline());
         }
-        while (!inited) {
+        while (robot_set->inited != Types::Init_status::INIT_FINISH) {
             update_data();
             // if (config.gimbal_id == 2)
             //     continue;
@@ -73,7 +74,13 @@ namespace Gimbal
                 *pitch_set = 0;
                 init_stop_times = 0;
             }
-            inited = init_stop_times >= Config::GIMBAL_INIT_STOP_TIME;
+
+            if (init_stop_times >= Config::GIMBAL_INIT_STOP_TIME) {
+                if (config.gimbal_id == 1)
+                    robot_set->inited |= 1;
+                else
+                    robot_set->inited |= 1 << 1;
+            }
             UserLib::sleep_ms(config.ControlTime);
         }
     }

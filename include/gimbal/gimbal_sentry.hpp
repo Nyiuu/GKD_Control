@@ -19,7 +19,6 @@ namespace Gimbal
        public:
         std::shared_ptr<Robot::Robot_set> robot_set;
         GimbalConfig config;
-        bool inited = false;
 
         Device::IMU imu;
         Device::M9025 yaw_motor;

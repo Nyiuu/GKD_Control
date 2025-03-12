@@ -48,6 +48,7 @@ namespace Robot
         fp32 aimy;
         fp32 aimz;
         bool is_aiming = false;
+        uint8_t inited = 0;
         Types::ROBOT_MODE mode = Types::ROBOT_MODE::ROBOT_NO_FORCE;
         Types::ROBOT_MODE last_mode = Types::ROBOT_MODE::ROBOT_NO_FORCE;
 
