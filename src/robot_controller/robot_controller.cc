@@ -24,8 +24,8 @@ namespace Robot
         // NOTE: register motors here
 
         // cv_controller_.init(robot_set);
-        rc_controller.enable(robot_set);
         // super_cap.init("Hero_Chassis");
+        rc_controller.enable(robot_set);
 
         chassis.init(robot_set);
         gimbal.init(robot_set);
@@ -46,7 +46,7 @@ namespace Robot
 
     void Robot_ctrl::start() {
         threads.emplace_back(&Config::GimbalType::task, &gimbal);
-        threads.emplace_back(&Chassis::Chassis::task, &chassis);
+        // threads.emplace_back(&Chassis::Chassis::task, &chassis);
         threads.emplace_back(&Device::Dji_referee::task, &referee);
         IFDEF(CONFIG_SENTRY, threads.emplace_back(&Gimbal::GimbalT::task, &gimbal_left));
         IFDEF(CONFIG_SENTRY, threads.emplace_back(&Gimbal::GimbalT::task, &gimbal_right));

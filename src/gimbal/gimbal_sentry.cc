@@ -5,6 +5,7 @@
 #include "robot_type_config.hpp"
 #include "types.hpp"
 #include "user_lib.hpp"
+#include "utils.hpp"
 
 namespace Gimbal
 {
@@ -53,10 +54,10 @@ namespace Gimbal
         while (true) {
             update_data();
             switch (robot_set->mode) {
-                case Types::ROBOT_MODE::ROBOT_NO_FORCE: 0 >> yaw_motor; continue;
+                case Types::ROBOT_MODE::ROBOT_NO_FORCE: 0 >> yaw_motor; break;
                 case Types::ROBOT_MODE::ROBOT_FINISH_INIT:
                 case Types::ROBOT_MODE::ROBOT_IDLE:
-                case Types::ROBOT_MODE::ROBOT_SEARCH: *yaw_set >> yaw_absolute_pid >> yaw_motor; continue;
+                case Types::ROBOT_MODE::ROBOT_SEARCH: *yaw_set >> yaw_absolute_pid >> yaw_motor; break;
                 default: 0.f >> yaw_relative_with_two_head_pid >> yaw_motor;
             };
             UserLib::sleep_ms(Config::GIMBAL_CONTROL_TIME);

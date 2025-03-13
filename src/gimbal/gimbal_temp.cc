@@ -1,7 +1,10 @@
 #include "gimbal/gimbal_temp.hpp"
 
+#include <algorithm>
+
 #include "gimbal/gimbal_config.hpp"
 #include "robot_type_config.hpp"
+#include "serial/serial.h"
 #include "types.hpp"
 #include "user_lib.hpp"
 #include "utils.hpp"
@@ -58,8 +61,9 @@ namespace Gimbal
         }
         while (robot_set->inited != Types::Init_status::INIT_FINISH) {
             update_data();
-            // if (config.gimbal_id == 2)
-            //     continue;
+            if (config.gimbal_id == 2) {
+                robot_set->inited |= 1 << 1;
+            }
 
             0.f >> yaw_relative_pid >> yaw_motor;
             0.f >> pitch_absolute_pid >> pitch_motor;
@@ -93,6 +97,23 @@ namespace Gimbal
             if (robot_set->mode == Types::ROBOT_MODE::ROBOT_NO_FORCE) {
                 yaw_motor.give_current = 0;
                 pitch_motor.give_current = 0;
+            } else if (robot_set->mode == Types::ROBOT_MODE::ROBOT_SEARCH) {
+                static float delta = 0;
+                static float delta_1 = 0;
+
+                float yaw = (sin(delta) - 1) * (M_PIf / 2);
+                float pitch = sin(delta_1) * 0.30 + 0.165;
+                delta += 0.001;
+                delta_1 += 0.003;
+
+                if (config.gimbal_id == 1) {
+                    yaw >> yaw_relative_pid >> yaw_motor;
+                } else {
+                    -yaw >> yaw_relative_pid >> yaw_motor;
+                }
+                *pitch_set = std::clamp((double)pitch, -0.18, 0.51);
+
+                *pitch_set >> pitch_absolute_pid >> pitch_motor;
             } else {
                 *yaw_set >> yaw_absolute_pid >> yaw_motor;
                 *pitch_set >> pitch_absolute_pid >> pitch_motor;

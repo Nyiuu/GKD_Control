@@ -95,7 +95,7 @@ namespace Config
                 .right_friction_motor_config = Hardware::DJIMotorConfig{3508, "CAN_LEFT_HEAD", 2, 0.075},
                 .trigger_motor_config = Hardware::DJIMotorConfig{2006, "CAN_BULLET", 1, 0.075},
                 .friction_speed_pid_config = Pid::PidConfig{
-                    5.f,       // KP
+                    200.f,       // KP
                     0.05f,     // KI
                     10.0f,     // KD
                     16000.0f,  // MAX_OUT
@@ -156,10 +156,10 @@ namespace Config
             .YawOffSet = 6094,
             .shoot_config = {
                 .left_friction_motor_config = Hardware::DJIMotorConfig{3508, "CAN_RIGHT_HEAD", 1, 0.075},
-                .right_friction_motor_config = Hardware::DJIMotorConfig{3508, "CAN_RIGHT_HEAD", 1, 0.075},
+                .right_friction_motor_config = Hardware::DJIMotorConfig{3508, "CAN_RIGHT_HEAD", 2, 0.075},
                 .trigger_motor_config = Hardware::DJIMotorConfig{2006, "CAN_BULLET", 1, 0.075},
                 .friction_speed_pid_config = Pid::PidConfig{
-                    5.f,       // KP
+                    2000.f,       // KP
                     0.05f,     // KI
                     10.0f,     // KD
                     16000.0f,  // MAX_OUT
@@ -217,13 +217,13 @@ namespace Config
             .gimbal_motor_dir = 1.0,
             .gimbal_id = 1,
             .ControlTime = 1,
-            .YawOffSet = 6094,
+            .YawOffSet = 47555,
             .shoot_config = {
                 .left_friction_motor_config = Hardware::DJIMotorConfig{3508, "CAN_RIGHT_HEAD", 1, 0.075},
                 .right_friction_motor_config = Hardware::DJIMotorConfig{3508, "CAN_RIGHT_HEAD", 1, 0.075},
                 .trigger_motor_config = Hardware::DJIMotorConfig{2006, "CAN_BULLET", 1, 0.075},
                 .friction_speed_pid_config = Pid::PidConfig{
-                    5.f,       // KP
+                    2000.f,       // KP
                     0.05f,     // KI
                     10.0f,     // KD
                     16000.0f,  // MAX_OUT
@@ -355,8 +355,8 @@ namespace Config
     constexpr uint32_t GIMBAL_INIT_STOP_TIME = 2000;
     constexpr fp32 GIMBAL_INIT_EXP = 0.1f;
 
-    constexpr fp32 FRICTION_MAX_SPEED = 4850.f;
-    constexpr fp32 FRICTION_ADD_SPEED = 2500.f;
+    constexpr fp32 FRICTION_MAX_SPEED = 3.7f;
+    constexpr fp32 FRICTION_ADD_SPEED = 1.0f;
     constexpr fp32 CONTINUE_TRIGGER_SPEED = 9.f;
 
     constexpr uint32_t CHASSIS_CONTROL_TIME = 2;

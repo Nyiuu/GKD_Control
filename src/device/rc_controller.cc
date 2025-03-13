@@ -25,12 +25,22 @@ namespace Device
         // LOG_INFO("rc controller ch1 %d\n", pkg.ch2);
         robot_set->vx_set = ((float)pkg.ch3 / 660) * 3;
         robot_set->vy_set = ((float)pkg.ch2 / 660) * 3;
-        robot_set->gimbalT_1_yaw_set += ((float)pkg.ch0 / 660) / 200;
-        robot_set->gimbalT_1_pitch_set = ((float)pkg.ch1 / 660) * 0.3;
-        if (pkg.s1 == 3)
+        if (robot_set->mode == Types::ROBOT_MODE::ROBOT_SEARCH) {
+            robot_set->gimbal_sentry_yaw_set += ((float)pkg.ch0 / 660) / 200;
+        } else {
+            robot_set->gimbalT_1_yaw_set += ((float)pkg.ch0 / 660) / 200;
+            robot_set->gimbalT_1_pitch_set = ((float)pkg.ch1 / 660) * 0.3;
+        }
+
+        if (pkg.s1 == 2)
             robot_set->wz_set = 0.5;
         else
             robot_set->wz_set = 0;
+
+        if (pkg.s2 == 2)
+            robot_set->friction_open = true;
+        else
+            robot_set->friction_open = false;
         update_time();
     }
 }  // namespace Device

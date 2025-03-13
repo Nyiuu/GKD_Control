@@ -1,9 +1,10 @@
 #pragma once
 
+#include <memory>
+
 #include "dji_motor.hpp"
 #include "ramp.hpp"
 #include "robot.hpp"
-#include <memory>
 #include "shoot_config.hpp"
 
 namespace Shoot
@@ -12,9 +13,8 @@ namespace Shoot
     {
        public:
         Shoot(const ShootConfig& config);
-        void init(const std::shared_ptr<Robot::Robot_set> &robot);
+        void init(const std::shared_ptr<Robot::Robot_set>& robot);
         ~Shoot() = default;
-        void decomposition_speed();
         [[noreturn]] void task();
         bool isJam();
 
@@ -29,6 +29,7 @@ namespace Shoot
         Hardware::DJIMotor trigger;
 
         std::shared_ptr<Robot::Robot_set> robot_set;
+
        private:
         UserLib::Ramp friction_ramp;
     };

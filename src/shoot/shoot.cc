@@ -21,49 +21,25 @@ namespace Shoot
 
     void Shoot::init(const std::shared_ptr<Robot::Robot_set>& robot) {
         robot_set = robot;
-    }
 
-    void Shoot::decomposition_speed() {
-        fp32 trigger_speed = 0.f;
-        if (robot_set->mode == Types::ROBOT_MODE::ROBOT_NO_FORCE) {
-            friction_ramp.clear();
-            trigger_speed = 0.f;
-        } else {
-            friction_ramp.update(robot_set->friction_open ? Config::FRICTION_MAX_SPEED : 0.f);
-            if (back_time) {
-                back_time--;
-                trigger_speed = robot_set->shoot_open ? -Config::CONTINUE_TRIGGER_SPEED : 0.f;
-            } else {
-                if (isJam()) {
-                    jam_time++;
-                }
-                if (jam_time > 500) {
-                    back_time = 1000;
-                    jam_time = 0;
-                }
-                trigger_speed = robot_set->shoot_open ? Config::CONTINUE_TRIGGER_SPEED : 0.f;
-            }
-        }
-        // friction[0].speed_set = -friction_ramp.out;
-        // friction[1].speed_set = friction_ramp.out;
-        // friction[2].speed_set = friction_ramp.out;
-        // friction[3].speed_set = -friction_ramp.out;
-        // for(auto & mot : trigger) {
-        //     mot.speed_set = trigger_speed;
-        // }
+        left_friction.enable();
+        right_friction.enable();
     }
 
     [[noreturn]] void Shoot::task() {
         while (true) {
-            decomposition_speed();
             if (robot_set->mode == Types::ROBOT_MODE::ROBOT_NO_FORCE) {
                 left_friction.set(0);
                 right_friction.set(0);
                 trigger.set(0);
-            } else if (robot_set->friction_open) {
-                left_friction.set(17);
-                right_friction.set(-17);
             }
+
+            friction_ramp.update(robot_set->friction_open ? Config::FRICTION_MAX_SPEED : 0.f);
+
+            // LOG_INFO("ramp %f %f\n", friction_ramp.out, left_friction.data_.output_linear_velocity);
+            left_friction.set(-friction_ramp.out);
+            right_friction.set(friction_ramp.out);
+
             if (robot_set->mode == Types::ROBOT_MODE::ROBOT_NO_FORCE || !robot_set->shoot_open) {
                 trigger.set(0);
             } else {

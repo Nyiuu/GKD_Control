@@ -36,15 +36,20 @@ namespace IO
 
     void Serial_interface::task() {
         while (true) {
-            if (isOpen()) {
-                read((uint8_t*)&header, 2);
-                if (header == 0xAA55) {
-                    read((uint8_t*)&header, 1);
-                    unpack(header);
+            try {
+                if (isOpen()) {
+                    read((uint8_t *)&header, 2);
+                    if (header == 0xAA55) {
+                        read((uint8_t *)&header, 1);
+                        unpack(header);
+                    }
+                } else {
+                    enumerate_ports();
+                    return;
                 }
-            } else {
-                enumerate_ports();
-                return;
+            } catch (serial::IOException &e) {
+                LOG_ERR("serail offline! end program now\n");
+                exit(-1);
             }
         }
     }

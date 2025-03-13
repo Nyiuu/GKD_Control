@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
     robot.init_join();
     LOG_INFO("init finished!\n");
 
-    robot.robot_set->set_mode(Types::ROBOT_MODE::ROBOT_FOLLOW_GIMBAL);
+    robot.robot_set->set_mode(Types::ROBOT_MODE::ROBOT_SEARCH);
 
     robot.start();
     robot.join();
