@@ -95,7 +95,7 @@ namespace Config
                 .right_friction_motor_config = Hardware::DJIMotorConfig{3508, "CAN_LEFT_HEAD", 2, 0.075},
                 .trigger_motor_config = Hardware::DJIMotorConfig{2006, "CAN_BULLET", 1, 0.075},
                 .friction_speed_pid_config = Pid::PidConfig{
-                    200.f,       // KP
+                    2000.f,       // KP
                     0.05f,     // KI
                     10.0f,     // KD
                     16000.0f,  // MAX_OUT
