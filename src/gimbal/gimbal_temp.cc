@@ -40,12 +40,10 @@ namespace Gimbal
             Pid::PidPosition(config.pitch_rate_pid_config, pitch_gyro) >> Pid::Invert(config.gimbal_motor_dir));
 
         yaw_relative_pid = Pid::PidRad(config.yaw_relative_pid_config, yaw_relative);
-
         MUXDEF(
             CONFIG_SENTRY,
             yaw_absolute_pid = Pid::PidRad(config.yaw_absolute_pid_config, fake_yaw_abs) >> Pid::Invert(-1),
             yaw_absolute_pid = Pid::PidRad(config.yaw_absolute_pid_config, imu.yaw) >> Pid::Invert(-1));
-        ;
 
         pitch_absolute_pid = Pid::PidRad(config.pitch_absolute_pid_config, imu.pitch);
 
@@ -112,7 +110,6 @@ namespace Gimbal
                     -yaw >> yaw_relative_pid >> yaw_motor;
                 }
                 *pitch_set = std::clamp((double)pitch, -0.18, 0.51);
-
                 *pitch_set >> pitch_absolute_pid >> pitch_motor;
             } else {
                 *yaw_set >> yaw_absolute_pid >> yaw_motor;

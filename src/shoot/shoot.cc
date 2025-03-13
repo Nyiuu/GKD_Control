@@ -3,6 +3,7 @@
 #include "pid_controller.hpp"
 #include "robot_type_config.hpp"
 #include "user_lib.hpp"
+#include "utils.hpp"
 
 namespace Shoot
 {
@@ -24,6 +25,7 @@ namespace Shoot
 
         left_friction.enable();
         right_friction.enable();
+        trigger.enable();
     }
 
     [[noreturn]] void Shoot::task() {
@@ -43,7 +45,7 @@ namespace Shoot
             if (robot_set->mode == Types::ROBOT_MODE::ROBOT_NO_FORCE || !robot_set->shoot_open) {
                 trigger.set(0);
             } else {
-                trigger.set(1);
+                trigger.set(4);
             }
             UserLib::sleep_ms(Config::SHOOT_CONTROL_TIME);
         }
