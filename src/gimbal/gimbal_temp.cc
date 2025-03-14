@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "gimbal/gimbal_config.hpp"
+#include "robot_controller.hpp"
 #include "robot_type_config.hpp"
 #include "serial/serial.h"
 #include "types.hpp"
@@ -115,6 +116,13 @@ namespace Gimbal
                 *yaw_set >> yaw_absolute_pid >> yaw_motor;
                 *pitch_set >> pitch_absolute_pid >> pitch_motor;
             }
+
+            Robot::SendGimbalInfo gimbal_info;
+            gimbal_info.header = 0xA6;
+            gimbal_info.yaw = imu.yaw;
+            gimbal_info.pitch = imu.pitch;
+            IO::io<SOCKET>["AUTO_AIM_CONTROL"]->send(gimbal_info);
+
             UserLib::sleep_ms(config.ControlTime);
         }
     }

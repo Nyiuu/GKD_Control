@@ -16,7 +16,7 @@ namespace Config
 
     const std::vector<std::string> CanInitList = { "Hero_Chassis", "Hero_Gimbal" };
 
-    const std::vector<std::string> SocketInitList = { "CONTROLLER_SOCKET" };
+    const std::vector<std::string> SocketInitList = { "AUTO_AIM_CONTROL" };
 
     const std::vector<std::tuple<std::string, int, int>> SerialInitList = { { "/dev/IMU_HERO", 115200, 2000 } };
 

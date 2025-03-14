@@ -121,7 +121,7 @@ namespace Robot
     } __attribute__((packed));
 
     // send twist package heaedr = 0x6A;
-    struct Vison_control
+    struct Auto_aim_control
     {
         /*       导航部分       */
         uint8_t header;
@@ -135,6 +135,13 @@ namespace Robot
         float pitch_set;
 
         Types::ROBOT_MODE mode = Types::ROBOT_MODE::ROBOT_NO_FORCE;
+    } __attribute__((packed));
+
+    struct SendGimbalInfo
+    {
+        uint8_t header;
+        float yaw;
+        float pitch;
     } __attribute__((packed));
 
     struct SendVisionControl

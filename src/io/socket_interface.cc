@@ -1,5 +1,8 @@
 #include "socket_interface.hpp"
 
+#include <arpa/inet.h>
+#include <netinet/in.h>
+
 #include "robot.hpp"
 #include "user_lib.hpp"
 
@@ -25,7 +28,7 @@ namespace IO
                         break;
                     }
                     case 0x6A: {
-                        Robot::Vison_control vc;
+                        Robot::Auto_aim_control vc;
                         UserLib::unpack(vc, buffer);
                         callback(vc);
                         break;
@@ -54,6 +57,13 @@ namespace IO
 
         connections.insert(std::pair<uint8_t, uint8_t>(0xA6, 0x6A));
         connections.insert(std::pair<uint8_t, uint8_t>(0x5A, 0xA5));
+
+        sockaddr_in client;
+        client.sin_family = AF_INET;
+        client.sin_addr.s_addr = inet_addr("127.0.0.1");
+        client.sin_port = htons(11453);
+
+        clients.insert(std::pair<uint8_t, sockaddr_in>(0x6A, client));
 
         if (bind(sockfd, (sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
             LOG_ERR("can't bind socket fd with port number");
