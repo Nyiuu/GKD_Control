@@ -1,8 +1,11 @@
 #include "gimbal/gimbal_temp.hpp"
 
 #include <algorithm>
+#include <fstream>
+#include <iostream>
 
 #include "gimbal/gimbal_config.hpp"
+#include "pid_controller.hpp"
 #include "robot_controller.hpp"
 #include "robot_type_config.hpp"
 #include "serial/serial.h"
@@ -41,6 +44,7 @@ namespace Gimbal
             Pid::PidPosition(config.pitch_rate_pid_config, pitch_gyro) >> Pid::Invert(config.gimbal_motor_dir));
 
         yaw_relative_pid = Pid::PidRad(config.yaw_relative_pid_config, yaw_relative);
+
         MUXDEF(
             CONFIG_SENTRY,
             yaw_absolute_pid = Pid::PidRad(config.yaw_absolute_pid_config, fake_yaw_abs) >> Pid::Invert(-1),
@@ -90,6 +94,8 @@ namespace Gimbal
 
     [[noreturn]] void GimbalT::task() {
         std::jthread shoot_thread(&Shoot::Shoot::task, &shoot);
+        std::ofstream outputFile("pid_tune.txt");
+        std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
         while (true) {
             update_data();
             // LOG_INFO("yaw set %f, imu yaw %f\n", *yaw_set, fake_yaw_abs);
@@ -112,6 +118,36 @@ namespace Gimbal
                 }
                 *pitch_set = std::clamp((double)pitch, -0.18, 0.51);
                 *pitch_set >> pitch_absolute_pid >> pitch_motor;
+            }
+            if (robot_set->mode == Types::ROBOT_MODE::ROBOT_GIMBAL_PID_TUNE) {
+                // SPEED LOOP
+                // static int delta_time = 0;
+                // delta_time++;
+                // if ((delta_time / 1000) % 2 == 0) {
+                //    yaw_motor.set(10);
+                //} else {
+                //    yaw_motor.set(-10);
+                //}
+                // std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+                // outputFile << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << ", "
+                //           << yaw_motor.give_current << ", " << imu.yaw_rate << "\n"
+                //           << std::flush;
+
+                // POSITION LOOP
+                static int delta_time = 0;
+                delta_time++;
+                if ((delta_time / 1000) % 2 == 0) {
+                    M_PIf / 2 >> yaw_absolute_pid >> yaw_motor;
+                } else {
+                    LOG_INFO("%d\n", delta_time);
+                    -M_PIf / 2 >> yaw_absolute_pid >> yaw_motor;
+                }
+
+                std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+                outputFile << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << ", "
+                           << yaw_absolute_pid.out << ", " << imu.yaw << "\n"
+                           << std::flush;
+
             } else {
                 *yaw_set >> yaw_absolute_pid >> yaw_motor;
                 *pitch_set >> pitch_absolute_pid >> pitch_motor;
@@ -125,6 +161,7 @@ namespace Gimbal
 
             UserLib::sleep_ms(config.ControlTime);
         }
+        outputFile.close();
     }
 
     void GimbalT::update_data() {

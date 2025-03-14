@@ -57,6 +57,7 @@ namespace Gimbal
                 case Types::ROBOT_MODE::ROBOT_NO_FORCE: 0 >> yaw_motor; break;
                 case Types::ROBOT_MODE::ROBOT_FINISH_INIT:
                 case Types::ROBOT_MODE::ROBOT_IDLE:
+                case Types::ROBOT_MODE::ROBOT_GIMBAL_PID_TUNE: break;
                 case Types::ROBOT_MODE::ROBOT_SEARCH: *yaw_set >> yaw_absolute_pid >> yaw_motor; break;
                 default: 0.f >> yaw_relative_with_two_head_pid >> yaw_motor;
             };

@@ -136,6 +136,7 @@ namespace Types
         ROBOT_FOLLOW_GIMBAL,
         ROBOT_SEARCH,
         ROBOT_IDLE,
+        ROBOT_GIMBAL_PID_TUNE,
         ROBOT_NOT_FOLLOW
     };
 

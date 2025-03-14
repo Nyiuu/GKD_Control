@@ -23,6 +23,7 @@ CPPFLAGS += -I$(WORK_DIR)/include/device/referee
 
 # NOTE: turn on debug here
 CPPFLAGS += -D__DEBUG__
+CPPFLAGS += -DCONFIG_PID_TUNNING
 
 # FIXME: imtui dependency linking
 CPPFLAGS += -I "./3rdparty/include"

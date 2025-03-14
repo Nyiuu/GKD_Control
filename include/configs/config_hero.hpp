@@ -50,6 +50,7 @@ namespace Config
         .imu_serial_port = "/dev/IMU_HERO",
         .yaw_motor_config = Hardware::DJIMotorConfig(6020, "Hero_Gimbal", 1),
         .pitch_motor_config = Hardware::DJIMotorConfig(6020, "Hero_Gimbal", 2),
+				// PID SPEED
         .yaw_rate_pid_config = {
             .kp =           8000.f,
             .ki =           0.0f,
@@ -64,6 +65,7 @@ namespace Config
             .max_out =      30000.0f,
             .max_iout =     5000.0f,
         },
+				// PID POSITION RELATIVE
         .yaw_relative_pid_config ={
             .kp =           10.0f,
             .ki =           0.0f,
@@ -71,6 +73,7 @@ namespace Config
             .max_out =      10.0f,
             .max_iout =     0.0f,
         },
+				// PID POSITION ABSOLUTE
         .yaw_absolute_pid_config = {
             .kp =           12.0f,
             .ki =           0.0f,
