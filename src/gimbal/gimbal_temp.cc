@@ -59,6 +59,7 @@ namespace Gimbal
             LOG_INFO("offline %d %d %d\n", imu.offline(), yaw_motor.offline(), pitch_motor.offline());
         }
         while (robot_set->inited != Types::Init_status::INIT_FINISH) {
+        std::cout << "yaw now: " << imu.yaw << ", " << imu.pitch << std::endl;
             update_data();
             if (config.gimbal_id == 2) {
                 robot_set->inited |= 1 << 1;
@@ -87,9 +88,31 @@ namespace Gimbal
         }
     }
 
+#include "deque"
+
     [[noreturn]] void GimbalT::task() {
         std::jthread shoot_thread(&Shoot::Shoot::task, &shoot);
+        std::deque<std::pair<std::chrono::system_clock::time_point, float>> q1, q2;
+        int cnt = 0;
         while (true) {
+            // auto val = pitch_motor.data_.rotor_angle;
+            auto val = imu.pitch;
+            auto now_time = std::chrono::system_clock::now();
+            while (!q1.empty() && q1.back().second > val) {
+                q1.pop_back();
+            }
+            while (!q2.empty() && q2.back().second < val) {
+                q2.pop_back();
+            }
+            q1.emplace_back(now_time, val);
+            q2.emplace_back(now_time, val);
+            while (!q1.empty() && q1.front().first < now_time - std::chrono::milliseconds(1000)) {
+                q1.pop_front();
+            }
+            while (!q2.empty() && q2.front().first < now_time - std::chrono::milliseconds(1000)) {
+                q2.pop_front();
+            }
+            std::cout << (q2.front().second - q1.front().second) * 100 << std::endl;
             update_data();
             // LOG_INFO("yaw set %f, imu yaw %f\n", *yaw_set, imu.yaw);
             if (robot_set->mode == Types::ROBOT_MODE::ROBOT_NO_FORCE) {

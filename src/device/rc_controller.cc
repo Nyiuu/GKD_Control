@@ -28,8 +28,20 @@ namespace Device
         }
 
         // auto-aim, disable control
+
+        if (pkg.s2 == 1) {
+            robot_set->friction_open = true;
+        }
+        else
+            robot_set->friction_open = false;
+
         if (pkg.s1 == 2)
             return;
+
+        if (pkg.ch4 == 660)
+            robot_set->shoot_open = true;
+        else
+            robot_set->shoot_open = false;
 
         if (inited) {
             robot_set->vx_set = ((float)pkg.ch3 / 660) * 3;

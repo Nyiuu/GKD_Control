@@ -67,7 +67,7 @@ namespace Config
             .ki =           283.0f,
             .kd =           0.0f,
             .max_out =      30000.0f,
-            .max_iout =     5000.0f,
+            .max_iout =     15000.0f,
         },
 				// PID POSITION RELATIVE
         .yaw_relative_pid_config ={
@@ -213,7 +213,7 @@ namespace Config
     constexpr uint32_t GIMBAL_INIT_STOP_TIME = 2000;
     constexpr fp32 GIMBAL_INIT_EXP = 0.1f;
 
-    constexpr fp32 FRICTION_MAX_SPEED = 3.7f;
+    constexpr fp32 FRICTION_MAX_SPEED = 3.65f;
     constexpr fp32 FRICTION_ADD_SPEED = 1.0f;
     constexpr fp32 CONTINUE_TRIGGER_SPEED = 4.f;
 
