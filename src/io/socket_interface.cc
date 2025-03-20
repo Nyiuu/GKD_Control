@@ -33,6 +33,12 @@ namespace IO
                         callback(vc);
                         break;
                     }
+                    case 0x6B: {
+                        Robot::ReceiveNavigationInfo pkg{};
+                        UserLib::unpack(pkg, buffer);
+                        callback(pkg);
+                        break;
+                    }
                     default: {
                         LOG_ERR("get error flag: %02x\n", header);
                         Robot::ReceiveGimbalPacket pkg{};
@@ -56,6 +62,7 @@ namespace IO
         serv_addr.sin_port = htons(port_num);
 
         connections.insert(std::pair<uint8_t, uint8_t>(0xA6, 0x6A));
+        connections.insert(std::pair<uint8_t, uint8_t>(0xB6, 0x6B));
         connections.insert(std::pair<uint8_t, uint8_t>(0x5A, 0xA5));
 
         sockaddr_in client;
@@ -64,6 +71,11 @@ namespace IO
         client.sin_port = htons(11453);
 
         clients.insert(std::pair<uint8_t, sockaddr_in>(0x6A, client));
+
+        client.sin_addr.s_addr = inet_addr("192.168.10.2");
+        client.sin_port = htons(11455); 
+
+        clients.insert(std::pair<uint8_t, sockaddr_in>(0x6B, client));
 
         if (bind(sockfd, (sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
             LOG_ERR("can't bind socket fd with port number");

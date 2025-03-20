@@ -22,13 +22,15 @@ namespace Device
     }
 
     void Rc_Controller::unpack(const Types::ReceivePacket_RC_CTRL &pkg) {
-        // LOG_INFO("rc controller ch1 %d %d %d %d\n", pkg.s1, pkg.s2, pkg.ch1, pkg.ch3);
+        LOG_INFO("rc controller ch1 %d %d %d %d\n", pkg.s1, pkg.s2, pkg.ch1, pkg.ch3);
         if (pkg.s1 == 2 && pkg.s2 == 2 && pkg.ch4 == -660) {
             inited = true;
         }
         if (inited) {
-            robot_set->vx_set = ((float)pkg.ch3 / 660) * 3;
-            robot_set->vy_set = ((float)pkg.ch2 / 660) * 3;
+            if (pkg.ch3)
+                robot_set->vx_set = ((float)pkg.ch3 / 660) * 3;
+            if (pkg.ch2)
+                robot_set->vy_set = ((float)pkg.ch2 / 660) * 3;
             if (robot_set->mode == Types::ROBOT_MODE::ROBOT_SEARCH) {
                 robot_set->gimbal_sentry_yaw_set += ((float)pkg.ch0 / 660) / 200;
             } else {
@@ -39,7 +41,10 @@ namespace Device
             }
 
             if (pkg.s1 == 1)
-                robot_set->wz_set = 0.5;
+                // robot_set->wz_set = 1;
+            {
+                robot_set->vx_set = robot_set->vy_set = 0;
+            }
             else
                 robot_set->wz_set = 0;
 

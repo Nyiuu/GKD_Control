@@ -15,7 +15,7 @@ namespace Config
 
     const std::vector<std::string> CanInitList = { "CAN_CHASSIS", "CAN_BULLET", "CAN_LEFT_HEAD", "CAN_RIGHT_HEAD" };
 
-    const std::vector<std::string> SocketInitList = { "CONTROLLER_SOCKET" };
+    const std::vector<std::string> SocketInitList = { "AUTO_AIM_CONTROL" };
 
     const std::vector<std::tuple<std::string, int, int>> SerialInitList = { { "/dev/IMU_RIGHT", 115200, 2000 },
                                                                             { "/dev/IMU_LEFT", 115200, 2000 },
@@ -34,7 +34,7 @@ namespace Config
             .kp =           4.0f,
             .ki =           0.0f,
             .kd =           10.0f,
-            .max_out =      6.0f,
+            .max_out =      2.0f,
             .max_iout =     0.2f,
         },
         .wheel_speed_pid_config = {

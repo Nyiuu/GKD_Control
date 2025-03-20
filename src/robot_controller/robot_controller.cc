@@ -46,7 +46,7 @@ namespace Robot
 
     void Robot_ctrl::start() {
         threads.emplace_back(&Config::GimbalType::task, &gimbal);
-        // threads.emplace_back(&Chassis::Chassis::task, &chassis);
+        threads.emplace_back(&Chassis::Chassis::task, &chassis);
         threads.emplace_back(&Device::Dji_referee::task, &referee);
         IFDEF(CONFIG_SENTRY, threads.emplace_back(&Gimbal::GimbalT::task, &gimbal_left));
         IFDEF(CONFIG_SENTRY, threads.emplace_back(&Gimbal::GimbalT::task, &gimbal_right));
@@ -67,10 +67,16 @@ namespace Robot
         }
         for (auto& name : Config ::SocketInitList) {
             IO::io<SOCKET>.insert(name);
-            IO::io<SOCKET>[name] -> register_callback<Auto_aim_control>([this](const Auto_aim_control& vc) {
-                LOG_INFO("socket recive %f %f\n", vc.yaw_set, vc.pitch_set);
-                robot_set->gimbalT_1_yaw_set = vc.yaw_set;
-                // robot_set->gimbalT_1_pitch_set = vc.pitch_set;
+            // IO::io<SOCKET>[name] -> register_callback<Auto_aim_control>([this](const Auto_aim_control& vc) {
+            //     LOG_INFO("socket recive %f %f\n", vc.yaw_set, vc.pitch_set);
+            //     robot_set->gimbalT_1_yaw_set = vc.yaw_set;
+            //     // robot_set->gimbalT_1_pitch_set = vc.pitch_set;
+            // });
+
+            IO::io<SOCKET>[name] -> register_callback<Robot::ReceiveNavigationInfo>([this](const Robot::ReceiveNavigationInfo& vc) {
+                LOG_INFO("navigation receive %f %f\n", vc.vx, vc.vy);
+                robot_set->vx_set = vc.vx;
+                robot_set->vy_set = vc.vy;
             });
         }
     }

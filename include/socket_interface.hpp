@@ -15,7 +15,7 @@
 
 namespace IO
 {
-    class Server_socket_interface : public Callback<Robot::Auto_aim_control, Robot::ReceiveGimbalPacket>
+    class Server_socket_interface : public Callback<Robot::Auto_aim_control, Robot::ReceiveGimbalPacket, Robot::ReceiveNavigationInfo>
 
     {
        public:
@@ -29,6 +29,7 @@ namespace IO
             if (it == connections.end()) {
                 LOG_ERR("error connections %x to %x\n", *(uint8_t *)&pkg, it->second);
             } else {
+                // LOG_INFO("send to %X\n", it->second);
                 auto n = sendto(
                     sockfd,
                     (const char *)(&pkg),

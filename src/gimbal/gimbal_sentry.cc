@@ -6,6 +6,7 @@
 #include "types.hpp"
 #include "user_lib.hpp"
 #include "utils.hpp"
+#include "socket_interface.hpp"
 
 namespace Gimbal
 {
@@ -61,6 +62,12 @@ namespace Gimbal
                 default: 0.f >> yaw_relative_with_two_head_pid >> yaw_motor;
             };
             UserLib::sleep_ms(Config::GIMBAL_CONTROL_TIME);
+
+            Robot::SendGimbalInfo gimbal_info;
+            gimbal_info.header = 0xB6;
+            gimbal_info.yaw = imu.yaw;
+            gimbal_info.pitch = imu.pitch;
+            IO::io<SOCKET>["AUTO_AIM_CONTROL"]->send(gimbal_info);
         }
     }
 
@@ -68,8 +75,8 @@ namespace Gimbal
         yaw_motor_speed = Config::RPM_TO_RAD_S * (fp32)yaw_motor.motor_measure.speed_rpm;
         yaw_relative = UserLib::rad_format(
             Config::M9025_ECD_TO_RAD * ((fp32)yaw_motor.motor_measure.ecd - Config::GIMBAL3_YAW_OFFSET_ECD));
-        // yaw_relative_with_two_head = robot_set->gimbalT_1_yaw_reletive + robot_set->gimbalT_2_yaw_reletive;
-        yaw_relative_with_two_head = robot_set->gimbalT_1_yaw_reletive;
+        yaw_relative_with_two_head = robot_set->gimbalT_1_yaw_reletive + robot_set->gimbalT_2_yaw_reletive;
+        // yaw_relative_with_two_head = robot_set->gimbalT_1_yaw_reletive;
         robot_set->gimbal_sentry_yaw_reletive = yaw_relative;
         robot_set->gimbal_sentry_yaw = imu.yaw;
     }

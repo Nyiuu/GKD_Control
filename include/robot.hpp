@@ -152,6 +152,13 @@ namespace Robot
         float yaw;
     } __attribute__((packed));
 
+    struct ReceiveNavigationInfo
+    {
+        uint8_t header;
+        float vx;
+        float vy;
+    } __attribute__((packed));
+
 }  // namespace Robot
 
 #endif
