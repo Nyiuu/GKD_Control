@@ -3,6 +3,7 @@
 #include "io.hpp"
 #include "serial_interface.hpp"
 #include "user_lib.hpp"
+#include "iostream"
 
 namespace Device
 {
@@ -26,6 +27,31 @@ namespace Device
         yaw_rate = pkg.yaw_v * (M_PIf / 180) / 1000;
         pitch_rate = pkg.pitch_v * (M_PIf / 180) / 1000;
         roll_rate = pkg.roll_v * (M_PIf / 180) / 1000;
+        // if (serial_name.compare("/dev/IMU_HERO") == 0)
+        //     LOG_INFO("imu %.6f %.6f %.6f\n", pkg.yaw, pkg.pitch, pkg.yaw_v);
+        update_time();
+    }
+
+    C_IMU::C_IMU(const std::string &serial_name) : serial_name(serial_name) {
+    }
+
+    void C_IMU::enable() {
+        auto serial_interface = IO::io<SERIAL>[serial_name];
+        if (serial_interface == nullptr) {
+            LOG_ERR("IMU Error: no serial named %s\n", serial_name.c_str());
+            return;
+        }
+        serial_interface->register_callback<Types::C_IMU_PKG>(
+            [&](const Types::C_IMU_PKG &rp) { unpack(rp); });
+    }
+
+    void C_IMU::unpack(const Types::C_IMU_PKG &pkg) {
+        yaw = UserLib::rad_format(M_PIf - pkg.yaw);
+        pitch = -pkg.pitch;
+        roll = UserLib::rad_format(-pkg.roll - M_PIf);
+        yaw_rate = -pkg.yaw_v;
+        pitch_rate = pkg.pitch_v;
+        roll_rate = -pkg.roll_v;
         // if (serial_name.compare("/dev/IMU_HERO") == 0)
         //     LOG_INFO("imu %.6f %.6f %.6f\n", pkg.yaw, pkg.pitch, pkg.yaw_v);
         update_time();

@@ -15,6 +15,7 @@ namespace Gimbal
     GimbalT::GimbalT(const GimbalConfig &config)
         : config(config),
           imu(config.imu_serial_port),
+          c_imu(config.c_imu_serial_port),
           yaw_motor(config.yaw_motor_config),
           pitch_motor(config.pitch_motor_config),
           yaw_set(nullptr),
@@ -49,6 +50,7 @@ namespace Gimbal
         pitch_absolute_pid = Pid::PidRad(config.pitch_absolute_pid_config, imu.pitch);
 
         imu.enable();
+        c_imu.enable();
         yaw_motor.enable();
         pitch_motor.enable();
     }
@@ -106,13 +108,14 @@ namespace Gimbal
             }
             q1.emplace_back(now_time, val);
             q2.emplace_back(now_time, val);
-            while (!q1.empty() && q1.front().first < now_time - std::chrono::milliseconds(1000)) {
+            while (!q1.empty() && q1.front().first < now_time - std::chrono::milliseconds(500)) {
                 q1.pop_front();
             }
-            while (!q2.empty() && q2.front().first < now_time - std::chrono::milliseconds(1000)) {
+            while (!q2.empty() && q2.front().first < now_time - std::chrono::milliseconds(500)) {
                 q2.pop_front();
             }
-            std::cout << (q2.front().second - q1.front().second) * 100 << std::endl;
+            std::cout << imu.roll_rate << ' ' << c_imu.roll_rate << std::endl;
+            // std::cout << (q2.front().second - q1.front().second) * 100 << std::endl;
             update_data();
             // LOG_INFO("yaw set %f, imu yaw %f\n", *yaw_set, imu.yaw);
             if (robot_set->mode == Types::ROBOT_MODE::ROBOT_NO_FORCE) {
@@ -135,8 +138,8 @@ namespace Gimbal
                 *pitch_set = std::clamp((double)pitch, -0.18, 0.51);
                 *pitch_set >> pitch_absolute_pid >> pitch_motor;
             } else {
-                *yaw_set >> yaw_absolute_pid >> yaw_motor;
-                *pitch_set >> pitch_absolute_pid >> pitch_motor;
+                // *yaw_set >> yaw_absolute_pid >> yaw_motor;
+                // *pitch_set >> pitch_absolute_pid >> pitch_motor;
             }
 
             if (config.gimbal_id == 1) {

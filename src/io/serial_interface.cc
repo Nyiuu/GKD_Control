@@ -30,6 +30,10 @@ namespace IO
             memcpy(buffer, read(sizeof(Types::ReceivePacket_RC_CTRL)).c_str(), sizeof(Types::ReceivePacket_RC_CTRL));
             UserLib::fromVector(buffer, &rc_pkg);
             callback(rc_pkg);
+        } if (pkg_id == 3) {
+            memcpy(buffer, read(sizeof(Types::C_IMU_PKG)).c_str(), sizeof(Types::C_IMU_PKG));
+            UserLib::fromVector(buffer, &c_imu_pkg);
+            callback(c_imu_pkg);
         }
         return 0;
     }

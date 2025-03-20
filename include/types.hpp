@@ -57,6 +57,16 @@ namespace Types
         int key;
     } __attribute__((packed)) ReceivePacket_RC_CTRL;
 
+    struct C_IMU_PKG
+    {
+        float roll;
+        float pitch;
+        float yaw;
+        float yaw_v;
+        float pitch_v;
+        float roll_v;
+    } __attribute__((packed));
+
     struct ReceivePacket_Super_Cap
     {
         uint8_t errorCode;

@@ -10,7 +10,7 @@
 namespace IO
 {
 
-    class Serial_interface : serial::Serial, public Callback<Types::ReceivePacket_IMU, Types::ReceivePacket_RC_CTRL>
+    class Serial_interface : serial::Serial, public Callback<Types::ReceivePacket_IMU, Types::ReceivePacket_RC_CTRL, Types::C_IMU_PKG>
     {
        public:
         Serial_interface(std::string port_name, int baudrate, int simple_timeout);
@@ -25,6 +25,7 @@ namespace IO
        public:
         Types::ReceivePacket_IMU imu_pkg;
         Types::ReceivePacket_RC_CTRL rc_pkg;
+        Types::C_IMU_PKG c_imu_pkg;
         std::string name;
 
        private:

@@ -38,6 +38,7 @@ namespace Gimbal
         GimbalConfig config;
 
         Device::IMU imu;
+        Device::C_IMU c_imu;
 
         Hardware::DJIMotor yaw_motor;
         Hardware::DJIMotor pitch_motor;
