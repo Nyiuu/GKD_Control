@@ -4,6 +4,8 @@
 #pragma once
 
 #include "functional"
+#include "algorithm"
+#include "mutex"
 #include "map"
 
 namespace IO {
@@ -109,17 +111,87 @@ namespace IO {
     class Callback_key {
        public:
         void callback_key(const Key &key, const Args &... args) {
+            std::lock_guard guard(callback_mutex);
             if (callback_map.count(key)) {
                 callback_map[key](args...);
             }
         }
 
         void register_callback_key(const Key &key, const std::function<void(const Args &...)> &fun) {
+            std::lock_guard guard(callback_mutex);
             callback_map[key] = fun;
         }
 
        private:
+        std::mutex callback_mutex;
         std::map<Key, std::function<void(const Args &...)>> callback_map;
+    };
+
+    template<typename FunType>
+    concept BufferFunType = requires(FunType fun, uint8_t *buffer, size_t n)
+    {
+        fun(buffer, n);
+    };
+
+    template<typename FunType>
+    concept ReturnFunType = requires(FunType fun, uint8_t *buffer, size_t n)
+    {
+        std::ranges::copy(fun(n), buffer);
+    };
+
+    class BitReader : public std::function<void(uint8_t *, int)>
+    {
+        using Inherited = std::function<void(uint8_t *, int)>;
+
+        public:
+        using Inherited::Inherited;
+        using Inherited::operator();
+
+        template<ReturnFunType FunType>
+        BitReader(FunType &&fun) : Inherited([this, fun](uint8_t *buffer, size_t n) {
+            auto data = fun(n);
+            std::ranges::copy(data, buffer);
+        }) {}
+
+        template<typename PKG>
+        PKG read() const {
+            PKG pkg{};
+            (*this)(reinterpret_cast<uint8_t *>(&pkg), sizeof(pkg));
+            return pkg;
+        }
+    };
+
+    template<typename Key>
+    class CallbackBit
+    {
+    public:
+        void register_callback(Key key, const std::function<void(const BitReader&)> &reader) {
+            std::lock_guard guard(callback_mutex);
+            callback_map[key] = reader;
+        }
+
+        template<typename PKG>
+        void register_callback(Key key, const std::function<void(const PKG&)> &fun) {
+            std::lock_guard guard(callback_mutex);
+            callback_map[key] = [this, fun](const BitReader &reader) {
+                PKG pkg{};
+                reader(reinterpret_cast<uint8_t *>(&pkg), sizeof(pkg));
+                fun(pkg);
+                // fun(reader.read<PKG>());
+            };
+        }
+
+        void callback(Key key, const BitReader& reader) {
+            std::lock_guard guard(callback_mutex);
+            if (callback_map.count(key)) {
+                callback_map[key](reader);
+            }
+        }
+
+    private:
+        std::mutex callback_mutex;
+        std::map<Key, std::function<void(const BitReader&)>> callback_map;
+
     };
 
 }  // namespace Hardware

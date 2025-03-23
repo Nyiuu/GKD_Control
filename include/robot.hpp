@@ -1,6 +1,7 @@
 #ifndef __ROBOT__
 #define __ROBOT__
 #include "types.hpp"
+#include <sys/socket.h>
 
 namespace Robot
 {
@@ -30,6 +31,8 @@ namespace Robot
         bool friction_open = false;
         bool shoot_open = false;
         bool cv_fire = false;
+
+        sockaddr cv_addr;
 
         /** other **/
         fp32 gimbalT_1_yaw_set = 0.f;

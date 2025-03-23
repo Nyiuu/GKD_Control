@@ -131,7 +131,7 @@ namespace Gimbal
                 gimbal_info.header = 0xA6;
                 MUXDEF(CONFIG_SENTRY, gimbal_info.yaw = fake_yaw_abs, gimbal_info.yaw = imu.yaw);
                 gimbal_info.pitch = imu.pitch;
-                IO::io<SOCKET>["AUTO_AIM_CONTROL"]->send(gimbal_info);
+                IO::io<SOCKET>["AUTO_AIM_CONTROL"]->send(robot_set->cv_addr, gimbal_info);
             }
 
             UserLib::sleep_ms(config.ControlTime);

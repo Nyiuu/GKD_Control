@@ -10,7 +10,7 @@
 namespace IO
 {
 
-    class Serial_interface : serial::Serial, public Callback<Types::ReceivePacket_IMU, Types::ReceivePacket_RC_CTRL>
+    class Serial_interface : serial::Serial, public CallbackBit<uint8_t>
     {
        public:
         Serial_interface(std::string port_name, int baudrate, int simple_timeout);
@@ -32,6 +32,7 @@ namespace IO
         std::string name;
 
        private:
+        BitReader bit_reader_;
         uint8_t buffer[256];
         uint16_t header;
     };

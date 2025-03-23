@@ -7,6 +7,7 @@ namespace IO
     Serial_interface::Serial_interface(std::string port_name, int baudrate, int simple_timeout)
         : serial::Serial(port_name, baudrate, serial::Timeout::simpleTimeout(simple_timeout)),
           name(port_name) {
+        bit_reader_ = [this](size_t n) {return read(n);};
     }
 
     Serial_interface::~Serial_interface() = default;
@@ -22,15 +23,15 @@ namespace IO
     }
 
     inline int Serial_interface::unpack(uint8_t pkg_id) {
-        if (pkg_id == 1) {
-            memcpy(buffer, read(sizeof(Types::ReceivePacket_IMU)).c_str(), sizeof(Types::ReceivePacket_IMU));
-            UserLib::fromVector(buffer, &imu_pkg);
-            callback(imu_pkg);
-        } else if (pkg_id == 2) {
-            memcpy(buffer, read(sizeof(Types::ReceivePacket_RC_CTRL)).c_str(), sizeof(Types::ReceivePacket_RC_CTRL));
-            UserLib::fromVector(buffer, &rc_pkg);
-            callback(rc_pkg);
-        }
+        // if (pkg_id == 1) {
+        //     memcpy(buffer, read(sizeof(Types::ReceivePacket_IMU)).c_str(), sizeof(Types::ReceivePacket_IMU));
+        //     UserLib::fromVector(buffer, &imu_pkg);
+        //     callback(imu_pkg);
+        // } else if (pkg_id == 2) {
+        //     memcpy(buffer, read(sizeof(Types::ReceivePacket_RC_CTRL)).c_str(), sizeof(Types::ReceivePacket_RC_CTRL));
+        //     UserLib::fromVector(buffer, &rc_pkg);
+        //     callback(rc_pkg);
+        // }
         return 0;
     }
 
@@ -41,7 +42,7 @@ namespace IO
                     read((uint8_t *)&header, 2);
                     if (header == 0xAA55) {
                         read((uint8_t *)&header, 1);
-                        unpack(header);
+                        callback(header, bit_reader_);
                     }
                 } else {
                     enumerate_ports();

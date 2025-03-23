@@ -15,7 +15,7 @@ namespace Device
             LOG_ERR("IMU Error: no serial named %s\n", serial_name.c_str());
             return;
         }
-        serial_interface->register_callback<Types::ReceivePacket_IMU>(
+        serial_interface->register_callback<Types::ReceivePacket_IMU>(0x01,
             [&](const Types::ReceivePacket_IMU &rp) { unpack(rp); });
     }
 

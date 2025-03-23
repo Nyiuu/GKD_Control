@@ -15,7 +15,7 @@
 
 namespace IO
 {
-    class Server_socket_interface : public Callback<Robot::Auto_aim_control, Robot::ReceiveGimbalPacket>
+    class Server_socket_interface : public Callback_key<uint8_t, BitReader, sockaddr>
 
     {
        public:
@@ -24,19 +24,9 @@ namespace IO
         void task();
 
         template<typename T>
-        void send(const T &pkg) {
-            auto it = connections.find(*(uint8_t *)&pkg);
-            if (it == connections.end()) {
-                LOG_ERR("error connections %x to %x\n", *(uint8_t *)&pkg, it->second);
-            } else {
-                auto n = sendto(
-                    sockfd,
-                    (const char *)(&pkg),
-                    sizeof(pkg),
-                    MSG_CONFIRM,
-                    (const struct sockaddr *)&clients.find(it->second)->second,
-                    sizeof(clients.find(it->second)->second));
-            }
+        void send(sockaddr addr, const T &pkg) {
+          sendto(sockfd, (const char *)(&pkg), sizeof(pkg),
+           MSG_CONFIRM, &addr, sizeof(addr));
         }
 
        private:
@@ -48,6 +38,7 @@ namespace IO
         std::map<uint8_t, uint8_t> connections;
 
         char buffer[256];
+        BitReader bit_reader_;
 
        public:
         std::string name;

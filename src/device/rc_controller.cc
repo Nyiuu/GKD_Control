@@ -17,7 +17,7 @@ namespace Device
             LOG_ERR("RC_CONTROLLER Error: no serial named %s\n", serial_name.c_str());
             return;
         }
-        serial_interface->register_callback<Types::ReceivePacket_RC_CTRL>(
+        serial_interface->register_callback<Types::ReceivePacket_RC_CTRL>(0x02,
             [&](const Types::ReceivePacket_RC_CTRL &rp) { unpack(rp); });
     }
 
