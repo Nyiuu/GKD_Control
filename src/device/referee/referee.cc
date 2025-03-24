@@ -62,7 +62,7 @@ namespace Device
                             rx_data + 7,
                             sizeof(Referee::GameStatus));
 
-                        printf("game status\n");
+                        // printf("game status\n");
                         break;
                     }
                     case Referee::RefereeCmdId::GAME_RESULT_CMD: {
@@ -70,7 +70,7 @@ namespace Device
                             &robot_set->referee_info.game_result_ref,
                             rx_data + 7,
                             sizeof(Referee::GameResult));
-                        printf("game result\n");
+                        // printf("game result\n");
                         break;
                     }
                     case Referee::RefereeCmdId::REFEREE_WARNING_CMD: {
@@ -85,7 +85,7 @@ namespace Device
                             &robot_set->referee_info.game_robot_status_data,
                             rx_data + 7,
                             sizeof(Referee::GameRobotStatus));
-                        printf("robot result\n");
+                        // printf("robot result\n");
                         break;
                     }
                     case Referee::RefereeCmdId::POWER_HEAT_DATA_CMD: {
@@ -93,7 +93,7 @@ namespace Device
                             &robot_set->referee_info.power_heat_data,
                             rx_data + 7,
                             sizeof(Referee::PowerHeatData));
-                        printf("power heat\n");
+                        // printf("power heat\n");
                         break;
                     }
                     case Referee::RefereeCmdId::BULLET_REMAINING_CMD: {
@@ -101,10 +101,12 @@ namespace Device
                             &robot_set->referee_info.bullet_allowance_data,
                             rx_data + 7,
                             sizeof(Referee::BulletAllowance));
-                        printf("bullet remaining \n");
+                        // printf("bullet remaining \n");
                         break;
                     }
-                    default: printf("Referee command ID %d not found.\n", cmd_id); break;
+                    default:
+                        // printf("Referee command ID %d not found.\n", cmd_id);
+                        break;
                 }
                 base_.referee_data_is_online_ = true;
                 return frame_len;

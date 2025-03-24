@@ -68,8 +68,8 @@ void UI_Delete(Device::Base *base_, u8 Del_Operate, u8 Del_Layer) {
     framehead.CMD_ID = UI_CMD_Robo_Exchange;  // 填充包头数据
 
     datahead.Data_ID = UI_Data_ID_Del;
-    datahead.Sender_ID = Robot_ID_Read;
-    datahead.Receiver_ID = Cilent_ID_Read;  // 填充操作数据
+    datahead.Sender_ID = 0x3;
+    datahead.Receiver_ID = 0x103;  // 填充操作数据
 
     del.Delete_Operate = Del_Operate;
     del.Layer = Del_Layer;  // 控制信息
@@ -110,7 +110,7 @@ void UI_Delete(Device::Base *base_, u8 Del_Operate, u8 Del_Layer) {
         Graph_Operate   图片操作，见头文件
         Graph_Layer    图层0-9
         Graph_Color    图形颜色
-        Graph_Width    图形线宽
+                        Graph_Width    图形线宽
         Start_x、Start_x    开始坐标
         End_x、End_y   结束坐标
 **********************************************************************************************************/
@@ -374,8 +374,9 @@ int UI_ReFresh(Device::Base *base_, int cnt, ...) {
         case 7: datahead.Data_ID = UI_Data_ID_Draw7; break;
         default: return (-1);
     }
-    datahead.Sender_ID = Robot_ID_Read;
-    datahead.Receiver_ID = Cilent_ID_Read;  // 填充操作数据
+    datahead.Sender_ID = 0x3;
+    datahead.Receiver_ID = 0x103;  // 填充操作数据
+    LOG_INFO("send ui\n");
 
     framepoint = (unsigned char *)&framehead;
     frametail = base_->getCRC16CheckSum(framepoint, sizeof(framehead), frametail);
@@ -445,8 +446,8 @@ int String_ReFresh(Device::Base *base_, String_Data string_Data) {
 
     datahead.Data_ID = UI_Data_ID_DrawString;
 
-    datahead.Sender_ID = Robot_ID_Read;
-    datahead.Receiver_ID = Cilent_ID_Read;  // 填充操作数据
+    datahead.Sender_ID = 0x3;
+    datahead.Receiver_ID = 0x103;  // 填充操作数据
 
     framepoint = (unsigned char *)&framehead;
     frametail = base_->getCRC16CheckSum(framepoint, sizeof(framehead), frametail);
@@ -550,8 +551,7 @@ void UI_init(UI_control_t *init) {
     memset(&init->fric_graph, 0, sizeof(Graph_Data));
     memset(&init->spin_graph, 0, sizeof(Graph_Data));
     memset(&init->accuracy_graph, 0, sizeof(Graph_Data));
-    // Line_Draw(&init->accuracy_graph, "acc", UI_Graph_ADD, 9, UI_Color_Green, 5, 50, 50, 500,
-    // 500);
+    Line_Draw(&init->accuracy_graph, "acc", UI_Graph_ADD, 9, UI_Color_Green, 5, 50, 50, 500, 500);
 }
 
 void UI_open(Device::Base *base_, UI_control_t *UI) {
@@ -623,22 +623,23 @@ void UI_set_spin(uint8_t mode) {
 }
 
 void UI_set_mode(UI_control_t *UI) {
-    uint16_t last_key = 0;
-    if ((UI->UI_rc_ctrl->key.v & UI_MODE_SWITCH_KEYBOARD) && !last_key) {
-        UI->UI_open ^= 1;
-    }
-    last_key = (UI->UI_rc_ctrl->key.v & UI_MODE_SWITCH_KEYBOARD);
+    UI->UI_open = 1;
+    // uint16_t last_key = 0;
+    // if ((UI->UI_rc_ctrl->key.v & UI_MODE_SWITCH_KEYBOARD) && !last_key) {
+    //     UI->UI_open ^= 1;
+    // }
+    // last_key = (UI->UI_rc_ctrl->key.v & UI_MODE_SWITCH_KEYBOARD);
 }
 
 void UI_set_control(Device::Base *base_, UI_control_t *UI) {
-    if (UI_control.UI_mode != UI_control.UI_open) {
+    if (true) {
         if (UI_control.UI_open) {
             UI_open(base_, &UI_control);
         } else {
             UI_close(base_, &UI_control);
         }
     }
-    if (UI_control.fric_mode != UI_control.fric_open) {
+    if (true) {
         Line_Draw(
             &UI_control.fric_graph,
             "frg",
@@ -652,7 +653,7 @@ void UI_set_control(Device::Base *base_, UI_control_t *UI) {
             FRIC_NAME_START_Y);
         UI_control.fric_mode = UI_control.fric_open;
     }
-    if (UI_control.spin_mode != UI_control.spin_open) {
+    if (true) {
         Line_Draw(
             &UI_control.spin_graph,
             "sps",
