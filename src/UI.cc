@@ -661,7 +661,7 @@ void custom_ui_task(Device::Dji_referee *referee_ui)
     {
 
         Read_Robot_ID(referee_ui);
-        void update_ui_data();
+        update_ui_data(referee_ui);
         sync_parameter();
         update_dynamic_paramater(referee_ui);
 
