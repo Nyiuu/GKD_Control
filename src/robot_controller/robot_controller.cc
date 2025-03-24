@@ -1,12 +1,10 @@
 #include "robot_controller.hpp"
-
 #include "io.hpp"
 #include "referee.hpp"
 #include "robot_type_config.hpp"
 
 namespace Robot
-{
-
+{  
     Robot_ctrl::Robot_ctrl()
         : rc_controller(Config::rc_controller_serial),
           gimbal(Config::gimbal_config),
@@ -46,7 +44,7 @@ namespace Robot
 
     void Robot_ctrl::start() {
         threads.emplace_back(&Config::GimbalType::task, &gimbal);
-        threads.emplace_back(&Chassis::Chassis::task, &chassis);
+        //threads.emplace_back(&Chassis::Chassis::task, &chassis);
         threads.emplace_back(&Device::Dji_referee::task, &referee);
         IFDEF(CONFIG_SENTRY, threads.emplace_back(&Gimbal::GimbalT::task, &gimbal_left));
         IFDEF(CONFIG_SENTRY, threads.emplace_back(&Gimbal::GimbalT::task, &gimbal_right));

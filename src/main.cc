@@ -1,8 +1,9 @@
 #include <csignal>
 #include <user_lib.hpp>
-
+#include "UI.hpp"
 #include "robot_controller.hpp"
 #include "utils.hpp"
+#include <thread>
 
 int main(int argc, char **argv) {
     Robot::Robot_ctrl robot;
@@ -16,6 +17,9 @@ int main(int argc, char **argv) {
     robot.robot_set->set_mode(Types::ROBOT_MODE::ROBOT_FOLLOW_GIMBAL);
 
     robot.start();
+    std::thread ui_thread;
+    ui_thread = std::thread(custom_ui_task, &robot.referee);
+    ui_thread.join();
     robot.join();
 
     return 0;

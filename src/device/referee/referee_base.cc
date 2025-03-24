@@ -74,4 +74,7 @@ namespace Device
         pch_message[dw_length - 1] = static_cast<uint8_t>(((wCRC >> 8) & 0x00ff));
     }
 
+    int Base::get_robot_id(){
+        return this->robot_id_;
+    }
 }  // namespace Device

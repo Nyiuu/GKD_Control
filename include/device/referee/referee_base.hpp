@@ -20,6 +20,7 @@ namespace Device
         std::string robot_color_;
         bool referee_data_is_online_ = false;
 
+        int get_robot_id();
         void initSerial();
         uint8_t getCRC8CheckSum(unsigned char *pch_message, unsigned int dw_length, unsigned char uc_crc_8);
         uint32_t verifyCRC8CheckSum(unsigned char *pch_message, unsigned int dw_length);

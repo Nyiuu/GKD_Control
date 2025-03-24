@@ -74,7 +74,7 @@ namespace Hardware {
     }
 
     void DJIMotor::enable() {
-        DJIMotorManager::register_motor(*this);
+        // DJIMotorManager::register_motor(*this);
     }
 
     namespace DJIMotorManager {

@@ -121,10 +121,10 @@ namespace Types
         } mouse;
         struct
         {
-            bool q;  //  spin clock wise
-            bool f;  //  spin counter clock wise
-            fp32 speed_x;
-            fp32 speed_y;
+            // bool q;  //  spin clock wise
+            // bool f;  //  spin counter clock wise
+            // fp32 speed_x;
+            // fp32 speed_y;
             int16_t v;
         } key;
 
