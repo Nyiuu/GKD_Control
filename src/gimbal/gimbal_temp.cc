@@ -10,6 +10,8 @@
 #include "user_lib.hpp"
 #include "utils.hpp"
 
+#include <arpa/inet.h>
+
 namespace Gimbal
 {
     GimbalT::GimbalT(const GimbalConfig &config)
@@ -127,11 +129,17 @@ namespace Gimbal
             }
 
             if (config.gimbal_id == 1) {
+                sockaddr_in client;
+                client.sin_family = AF_INET;
+                client.sin_addr.s_addr = inet_addr("127.0.0.1");
+                client.sin_port = htons(11453);
+
                 Robot::SendGimbalInfo gimbal_info;
                 gimbal_info.header = 0xA6;
                 MUXDEF(CONFIG_SENTRY, gimbal_info.yaw = fake_yaw_abs, gimbal_info.yaw = imu.yaw);
                 gimbal_info.pitch = imu.pitch;
-                IO::io<SOCKET>["AUTO_AIM_CONTROL"]->send(robot_set->cv_addr, gimbal_info);
+
+                IO::io<SOCKET>["AUTO_AIM_CONTROL"]->send(*(sockaddr*)(&client), gimbal_info);
             }
 
             UserLib::sleep_ms(config.ControlTime);

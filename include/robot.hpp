@@ -32,8 +32,6 @@ namespace Robot
         bool shoot_open = false;
         bool cv_fire = false;
 
-        sockaddr cv_addr;
-
         /** other **/
         fp32 gimbalT_1_yaw_set = 0.f;
         fp32 gimbalT_1_pitch_set = 0.f;

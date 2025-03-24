@@ -6,11 +6,16 @@ namespace IO
 {
     Serial_interface::Serial_interface(std::string port_name, int baudrate, int simple_timeout)
         : serial::Serial(port_name, baudrate, serial::Timeout::simpleTimeout(simple_timeout)),
-          name(port_name) {
-        bit_reader_ = [this](size_t n) {return read(n);};
+        CallbackStream<unsigned char>(), name(port_name) {
     }
 
     Serial_interface::~Serial_interface() = default;
+
+    void Serial_interface::bit_read(uint8_t * data, size_t n) {
+        std::string buffer = read(n);
+        std::ranges::copy(buffer, data);
+    }
+
 
     inline void Serial_interface::enumerate_ports() {
         std::vector<serial::PortInfo> devices_found = serial::list_ports();
@@ -42,7 +47,7 @@ namespace IO
                     read((uint8_t *)&header, 2);
                     if (header == 0xAA55) {
                         read((uint8_t *)&header, 1);
-                        callback(header, bit_reader_);
+                        callback(header);
                     }
                 } else {
                     enumerate_ports();

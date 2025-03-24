@@ -15,7 +15,7 @@
 
 namespace IO
 {
-    class Server_socket_interface : public Callback_key<uint8_t, BitReader, sockaddr>
+    class Server_socket_interface : public Callback_key<uint8_t, std::string, sockaddr>
 
     {
        public:
@@ -38,7 +38,6 @@ namespace IO
         std::map<uint8_t, uint8_t> connections;
 
         char buffer[256];
-        BitReader bit_reader_;
 
        public:
         std::string name;

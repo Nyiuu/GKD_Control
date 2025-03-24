@@ -10,13 +10,14 @@
 namespace IO
 {
 
-    class Serial_interface : serial::Serial, public CallbackBit<uint8_t>
+    class Serial_interface : serial::Serial, public CallbackStream<uint8_t>
     {
-       public:
+    public:
         Serial_interface(std::string port_name, int baudrate, int simple_timeout);
         Serial_interface() = delete;
         ~Serial_interface();
         void task();
+        void bit_read(uint8_t *, size_t n) override;
         template<typename T>
         void send(T val) {
            write(&val, sizeof(T));
@@ -32,7 +33,6 @@ namespace IO
         std::string name;
 
        private:
-        BitReader bit_reader_;
         uint8_t buffer[256];
         uint16_t header;
     };
