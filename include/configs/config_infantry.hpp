@@ -217,7 +217,7 @@ namespace Config
     constexpr uint32_t GIMBAL_INIT_STOP_TIME = 2000;
     constexpr fp32 GIMBAL_INIT_EXP = 0.1f;
 
-    constexpr fp32 FRICTION_MAX_SPEED = 2.9f;
+    constexpr fp32 FRICTION_MAX_SPEED = 2.5f;
     constexpr fp32 FRICTION_ADD_SPEED = 1.0f;
     constexpr fp32 CONTINUE_TRIGGER_SPEED = 6.f;
 
