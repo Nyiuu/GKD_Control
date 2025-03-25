@@ -28,6 +28,7 @@ namespace Robot
 
         /** shoot_control **/
         bool friction_open = false;
+        bool friction_real_state = false;    //friction's real state (motor linear speed < 0.5 ? false : true)
         bool cv_fire = false;
         int shoot_open = 0;
 

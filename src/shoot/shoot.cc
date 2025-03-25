@@ -41,6 +41,13 @@ namespace Shoot
 
             friction_ramp.update(robot_set->friction_open ? Config::FRICTION_MAX_SPEED : 0.f);
 
+            // friction really open?
+            robot_set->friction_real_state =
+                left_friction.data_.output_linear_velocity < 0.5 &&
+                        right_friction.data_.output_linear_velocity < 0.5
+                    ? false
+                    : true;
+
             // LOG_INFO("ramp %f %f\n", friction_ramp.out,
             // right_friction.data_.output_linear_velocity);
             left_friction.set(-friction_ramp.out);
@@ -51,8 +58,8 @@ namespace Shoot
                 robot_set->referee_info.bullet_allowance_data.bullet_allowance_num_42_mm > 0,
                 robot_set->referee_info.bullet_allowance_data.bullet_allowance_num_17_mm > 0);
 
-            if (robot_set->mode == Types::ROBOT_MODE::ROBOT_NO_FORCE || !(robot_set->shoot_open & gimbal_id) ||
-                !referee_fire_allowance) {
+            if (robot_set->mode == Types::ROBOT_MODE::ROBOT_NO_FORCE ||
+                !(robot_set->shoot_open & gimbal_id) || !referee_fire_allowance) {
                 trigger.set(0);
             } else {
                 trigger.set(Config::CONTINUE_TRIGGER_SPEED);
