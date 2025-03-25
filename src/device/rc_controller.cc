@@ -88,9 +88,16 @@ namespace Device
         if (skip_control)
         return;
         
-        robot_set->gimbalT_1_yaw_set += pkg.mouse_x / 2000.;
-        robot_set->gimbalT_2_yaw_set += pkg.mouse_x / 2000.;
-        // robot_set->gimbalT_1_pitch_set += pkg.mouse_y / 40;
+        robot_set->gimbalT_1_yaw_set += pkg.mouse_x / 10000.;
+        robot_set->gimbalT_2_yaw_set += pkg.mouse_x / 10000.;
+
+        robot_set->gimbalT_1_pitch_set += pkg.mouse_y / 10000.;
+        robot_set->gimbalT_2_pitch_set += pkg.mouse_y / 10000.;
+
+        LOG_INFO("mouse : %d %d\n", pkg.mouse_x, pkg.mouse_y);
+
+        robot_set->gimbalT_1_pitch_set = std::max(-0.3f, std::min(0.3f, robot_set->gimbalT_1_pitch_set));
+        robot_set->gimbalT_2_pitch_set = std::max(-0.3f, std::min(0.3f, robot_set->gimbalT_2_pitch_set));
         static bool use_key = false;
         if (pkg.key & 0xff)
         {

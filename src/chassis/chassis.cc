@@ -78,7 +78,7 @@ namespace Chassis
                     CONFIG_SENTRY,
                     for (int i = 0; i < 4; ++i) { motors[i].give_current = wheels_pid[i].out; },
 
-                    for (int i = 0; i < 4; ++i) { motors[i].give_current = cmd_power[i]; })
+                    for (int i = 0; i < 4; ++i) { motors[i].give_current = wheels_pid[i].out; })
             }
             UserLib::sleep_ms(config.ControlTime);
         }

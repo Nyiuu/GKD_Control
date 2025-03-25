@@ -12,7 +12,7 @@ include_directories(./include ./include/chassis ./include/device ./include/devic
 add_compile_options(-D__DEBUG__)
 add_compile_options(-Wno-pointer-arith -Wno-unused-parameter)
 
-add_compile_options(-DCONFIG_SENTRY=1)
+add_compile_options(-DCONFIG_INFANTRY=1)
 
 file(GLOB_RECURSE SOURCE src/main.cc ./*/*.cc)
 

@@ -114,7 +114,7 @@ namespace Gimbal
         std::jthread shoot_thread(&Shoot::Shoot::task, &shoot);
         while (true) {
             update_data();
-            LOG_INFO("%d: yaw set %f, imu yaw %f\n", config.header, *yaw_set, imu.yaw);
+            // LOG_INFO("%d: yaw set %f, imu yaw %f\n", config.header, *yaw_set, imu.yaw);
             if (robot_set->mode == Types::ROBOT_MODE::ROBOT_NO_FORCE) {
                 yaw_motor.give_current = 0;
                 pitch_motor.give_current = 0;
