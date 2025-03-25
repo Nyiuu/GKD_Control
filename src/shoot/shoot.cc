@@ -47,7 +47,7 @@ namespace Shoot
                         right_friction.data_.output_linear_velocity < 0.5
                     ? false
                     : true;
-
+            LOG_INFO("fric?: %d\n", robot_set->friction_real_state);
             // LOG_INFO("ramp %f %f\n", friction_ramp.out,
             // right_friction.data_.output_linear_velocity);
             left_friction.set(-friction_ramp.out);

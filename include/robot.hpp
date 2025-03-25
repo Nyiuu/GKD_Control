@@ -12,6 +12,7 @@ namespace Robot
         fp32 vx_set = 0.f;
         fp32 vy_set = 0.f;
         fp32 wz_set = 0.f;
+        bool spin_state = false;
 
         /** gimbal_control **/
         fp32 gimbal1_yaw_set = 0.f;

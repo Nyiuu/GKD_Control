@@ -130,7 +130,7 @@ namespace Device
                 &base_,
                 robot_set->friction_real_state,
                 robot_set->cv_fire,
-                false,
+                robot_set->spin_state,
                 ((float)robot_set->super_cap_info.capEnergy / 250) * 100);
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }

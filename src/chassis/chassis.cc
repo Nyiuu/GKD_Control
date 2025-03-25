@@ -64,6 +64,9 @@ namespace Chassis
                     wheels_pid[i].set(wheel_speed[i]);
                 }
 
+                robot_set->spin_state = robot_set->wz_set < 0.1 ? false : true;
+                LOG_INFO("spin?: %d\n", robot_set->spin_state);
+
                 // Power Limit
                 for (int i = 0; i < 4; ++i) {
                     objs[i].curAv = motors[i].motor_measure_.speed_rpm * M_PIf / 30;
@@ -77,7 +80,6 @@ namespace Chassis
                 MUXDEF(
                     CONFIG_SENTRY,
                     for (int i = 0; i < 4; ++i) { motors[i].give_current = wheels_pid[i].out; },
-
                     for (int i = 0; i < 4; ++i) { motors[i].give_current = wheels_pid[i].out; })
             }
             UserLib::sleep_ms(config.ControlTime);
