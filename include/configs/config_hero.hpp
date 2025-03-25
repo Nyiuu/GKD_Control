@@ -109,7 +109,8 @@ namespace Config
                 0.0f,      // KD
                 10000.0f,  // MAX_OUT
                 9000.0f,   // MAX_IOUT
-            }
+            },
+            .gimbal_id = 1
 }  // namespace Config
 }
 ;

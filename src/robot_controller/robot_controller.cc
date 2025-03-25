@@ -70,14 +70,6 @@ namespace Robot
         }
         for (auto& name : Config::SocketInitList) {
             IO::io<SOCKET>.insert(name);
-            IO::io<SOCKET>[name] -> register_callback<Auto_aim_control>(
-                                     [this](const Auto_aim_control& vc) {
-                                         // LOG_INFO("socket recive %f %f\n", vc.yaw_set,
-                                         // vc.pitch_set);
-                                         robot_set->gimbalT_1_yaw_set = vc.yaw_set;
-                                         robot_set->gimbalT_1_pitch_set = vc.pitch_set;
-                                         robot_set->cv_fire = vc.fire;
-                                     });
         }
     }
 };  // namespace Robot

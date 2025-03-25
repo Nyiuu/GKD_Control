@@ -21,22 +21,16 @@ namespace IO
                     clients.insert(std::pair<uint8_t, sockaddr_in>(header, cli_addr));
                 }
                 switch (header) {
-                    case 0xA5: {
-                        Robot::ReceiveGimbalPacket pkg{};
+                    case 0x37: {
+                        Robot::ReceiveNavigationInfo pkg{};
                         UserLib::unpack(pkg, buffer);
                         callback(pkg);
                         break;
                     }
-                    case 0x6A: {
+                    default: {
                         Robot::Auto_aim_control vc;
                         UserLib::unpack(vc, buffer);
-                        callback(vc);
-                        break;
-                    }
-                    default: {
-                        LOG_ERR("get error flag: %02x\n", header);
-                        Robot::ReceiveGimbalPacket pkg{};
-                        UserLib::unpack(pkg, buffer);
+                        callback_key(vc.header, vc);
                         break;
                     }
                 }
@@ -55,19 +49,18 @@ namespace IO
         serv_addr.sin_addr.s_addr = INADDR_ANY;
         serv_addr.sin_port = htons(port_num);
 
-        connections.insert(std::pair<uint8_t, uint8_t>(0xA6, 0x6A));
-        connections.insert(std::pair<uint8_t, uint8_t>(0x5A, 0xA5));
-
-        sockaddr_in client;
-        client.sin_family = AF_INET;
-        client.sin_addr.s_addr = inet_addr("127.0.0.1");
-        client.sin_port = htons(11453);
-
-        clients.insert(std::pair<uint8_t, sockaddr_in>(0x6A, client));
-
         if (bind(sockfd, (sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
             LOG_ERR("can't bind socket fd with port number");
         }
+    }
+
+    void Server_socket_interface::add_client(uint8_t header, std::string ip, int port) {
+        sockaddr_in client;
+        client.sin_family = AF_INET;
+        client.sin_addr.s_addr = inet_addr(ip.c_str());
+        client.sin_port = htons(port);
+        clients.insert(std::pair<uint8_t, sockaddr_in>(header, client));
+        // LOG_INFO("ip %s, port %d\n", ip.c_str(), port);
     }
 
     Server_socket_interface::~Server_socket_interface() {

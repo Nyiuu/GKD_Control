@@ -21,5 +21,8 @@ namespace Gimbal
         const int ControlTime{};
         const fp32 YawOffSet{};
         Shoot::ShootConfig shoot_config;
+        uint8_t header;
+        std::string auto_aim_ip;
+        int auto_aim_port;
     };
 }  // namespace Gimbal

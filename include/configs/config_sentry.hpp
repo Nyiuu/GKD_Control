@@ -113,8 +113,12 @@ namespace Config
                     0.0f,      // KD
                     10000.0f,  // MAX_OUT
                     9000.0f,   // MAX_IOUT
-                }
-            }
+                },
+                .gimbal_id = 2
+            },
+            .header = 0xB6,
+            .auto_aim_ip = "192.168.10.2",
+            .auto_aim_port = 11453,
         };
 
     const Gimbal::GimbalConfig gimbal_right_config = {
@@ -177,8 +181,12 @@ namespace Config
                     0.0f,      // KD
                     10000.0f,  // MAX_OUT
                     9000.0f,   // MAX_IOUT
-                }
-            }
+                },
+                .gimbal_id = 1
+            },
+            .header = 0xA6,
+            .auto_aim_ip = "127.0.0.1",
+            .auto_aim_port = 11453,
         };
 
     const Gimbal::GimbalConfig gimbal_config = {
@@ -242,7 +250,7 @@ namespace Config
                     10000.0f,  // MAX_OUT
                     9000.0f,   // MAX_IOUT
                 },
-								.trigger_dir = 1,
+                .trigger_dir = 1,
             }
         };
 

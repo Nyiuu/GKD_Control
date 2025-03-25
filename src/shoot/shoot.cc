@@ -13,7 +13,8 @@ namespace Shoot
         : friction_ramp(Config::FRICTION_ADD_SPEED, Config::SHOOT_CONTROL_TIME * 1e-3f),
           left_friction(config.left_friction_motor_config),
           right_friction(config.right_friction_motor_config),
-          trigger(config.trigger_motor_config) {
+          trigger(config.trigger_motor_config),
+          gimbal_id(config.gimbal_id) {
         left_friction.setCtrl(Pid::PidPosition(
             config.friction_speed_pid_config, left_friction.data_.output_linear_velocity));
         right_friction.setCtrl(Pid::PidPosition(
@@ -50,7 +51,7 @@ namespace Shoot
                 robot_set->referee_info.bullet_allowance_data.bullet_allowance_num_42_mm > 0,
                 robot_set->referee_info.bullet_allowance_data.bullet_allowance_num_17_mm > 0);
 
-            if (robot_set->mode == Types::ROBOT_MODE::ROBOT_NO_FORCE || !robot_set->shoot_open ||
+            if (robot_set->mode == Types::ROBOT_MODE::ROBOT_NO_FORCE || !(robot_set->shoot_open & gimbal_id) ||
                 !referee_fire_allowance) {
                 trigger.set(0);
             } else {

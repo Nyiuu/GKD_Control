@@ -28,8 +28,8 @@ namespace Robot
 
         /** shoot_control **/
         bool friction_open = false;
-        bool shoot_open = false;
         bool cv_fire = false;
+        int shoot_open = 0;
 
         /** other **/
         fp32 gimbalT_1_yaw_set = 0.f;
@@ -128,14 +128,7 @@ namespace Robot
     // send twist package heaedr = 0x6A;
     struct Auto_aim_control
     {
-        /*       导航部分       */
         uint8_t header;
-        // 线速度 m/s
-        float linear_vx;
-        float linear_vy;
-        // 旋转角速度 rad/s
-        float angular;
-        // 欧拉角
         float yaw_set;
         float pitch_set;
         bool fire;
@@ -156,6 +149,22 @@ namespace Robot
         float roll;
         float pitch;
         float yaw;
+    } __attribute__((packed));
+
+    struct ReceiveNavigationInfo
+    {
+        uint8_t header;
+        float vx;
+        float vy;
+    } __attribute__((packed));
+
+    struct SendNavigationInfo
+    {
+        uint8_t header;
+        float yaw;
+        float pitch;
+        float hp;
+        bool start;
     } __attribute__((packed));
 
 }  // namespace Robot

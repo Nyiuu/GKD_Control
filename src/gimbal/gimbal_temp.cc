@@ -54,7 +54,20 @@ namespace Gimbal
         imu.enable();
         yaw_motor.enable();
         pitch_motor.enable();
+
+        IO::io<SOCKET>["AUTO_AIM_CONTROL"]->add_client(config.header, config.auto_aim_ip, config.auto_aim_port);
+
+        LOG_INFO("%x\n",config.header);
+        IO::io<SOCKET>["AUTO_AIM_CONTROL"]->register_callback_key(
+            config.header, [this](const Robot::Auto_aim_control &vc) {
+                LOG_INFO("socket recive %f %f %d\n", vc.yaw_set, vc.pitch_set, config.gimbal_id);
+                *yaw_set = vc.yaw_set;
+                *pitch_set = vc.pitch_set;
+                robot_set->cv_fire = vc.fire;
+                
+            });
     }
+
 
     void GimbalT::init_task() {
         while (imu.offline() || yaw_motor.offline() || pitch_motor.offline()) {
@@ -101,7 +114,7 @@ namespace Gimbal
         std::jthread shoot_thread(&Shoot::Shoot::task, &shoot);
         while (true) {
             update_data();
-            // LOG_INFO("yaw set %f, imu yaw %f\n", *yaw_set, imu.yaw);
+            LOG_INFO("%d: yaw set %f, imu yaw %f\n", config.header, *yaw_set, imu.yaw);
             if (robot_set->mode == Types::ROBOT_MODE::ROBOT_NO_FORCE) {
                 yaw_motor.give_current = 0;
                 pitch_motor.give_current = 0;
@@ -123,16 +136,14 @@ namespace Gimbal
                 *pitch_set >> pitch_absolute_pid >> pitch_motor;
             } else {
                 *yaw_set >> yaw_absolute_pid >> yaw_motor;
-                *pitch_set >> pitch_absolute_pid >> pitch_motor;
+                *pitch_set >> pitch_absolute_pid >> pitch_motor ;
             }
 
-            if (config.gimbal_id == 1) {
-                Robot::SendGimbalInfo gimbal_info;
-                gimbal_info.header = 0xA6;
-                MUXDEF(CONFIG_SENTRY, gimbal_info.yaw = fake_yaw_abs, gimbal_info.yaw = imu.yaw);
-                gimbal_info.pitch = imu.pitch;
-                IO::io<SOCKET>["AUTO_AIM_CONTROL"]->send(gimbal_info);
-            }
+            Robot::SendGimbalInfo gimbal_info;
+            gimbal_info.header = config.header;
+            MUXDEF(CONFIG_SENTRY, gimbal_info.yaw = fake_yaw_abs, gimbal_info.yaw = imu.yaw);
+            gimbal_info.pitch = imu.pitch;
+            IO::io<SOCKET>["AUTO_AIM_CONTROL"]->send(gimbal_info);
 
             UserLib::sleep_ms(config.ControlTime);
         }

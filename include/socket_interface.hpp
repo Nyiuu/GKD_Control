@@ -15,28 +15,26 @@
 
 namespace IO
 {
-    class Server_socket_interface : public Callback<Robot::Auto_aim_control, Robot::ReceiveGimbalPacket>
+    class Server_socket_interface : public Callback<Robot::ReceiveNavigationInfo>, public Callback_key<uint8_t, Robot::Auto_aim_control>
 
     {
        public:
         Server_socket_interface(std::string name);
         ~Server_socket_interface();
         void task();
+        void add_client(uint8_t header, std::string ip, int port);
 
         template<typename T>
         void send(const T &pkg) {
-            auto it = connections.find(*(uint8_t *)&pkg);
-            if (it == connections.end()) {
-                LOG_ERR("error connections %x to %x\n", *(uint8_t *)&pkg, it->second);
-            } else {
-                auto n = sendto(
-                    sockfd,
-                    (const char *)(&pkg),
-                    sizeof(pkg),
-                    MSG_CONFIRM,
-                    (const struct sockaddr *)&clients.find(it->second)->second,
-                    sizeof(clients.find(it->second)->second));
-            }
+            uint8_t header = *(uint8_t *)(&pkg);
+            // LOG_INFO("header %d client: %d\n", header, clients.find(header)->second.sin_addr.s_addr);
+            auto n = sendto(
+                sockfd,
+                (const char *)(&pkg),
+                sizeof(pkg),
+                MSG_CONFIRM,
+                (const struct sockaddr *)&clients.find(header)->second,
+                sizeof(clients.find(header)->second));
         }
 
        private:
@@ -45,7 +43,6 @@ namespace IO
 
         sockaddr_in serv_addr;
         std::map<uint8_t, sockaddr_in> clients;
-        std::map<uint8_t, uint8_t> connections;
 
         char buffer[256];
 

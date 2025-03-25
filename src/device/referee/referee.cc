@@ -45,8 +45,8 @@ namespace Device
         if (static_cast<bool>(base_.verifyCRC8CheckSum(rx_data, k_header_length_))) {
             if (frame_header.data_length > 256)  // temporary and inaccurate value
             {
-                printf(
-                    "discard possible wrong frames, data length: %d\n", frame_header.data_length);
+                // printf(
+                //     "discard possible wrong frames, data length: %d\n", frame_header.data_length);
                 return 0;
             }
             // printf("data len %x %d %x\n", frame_header.sof, frame_header.data_length, rx_data[6]
@@ -62,7 +62,7 @@ namespace Device
                             rx_data + 7,
                             sizeof(Referee::GameStatus));
 
-                        // printf("game status\n");
+                        printf("game status\n");
                         break;
                     }
                     case Referee::RefereeCmdId::GAME_RESULT_CMD: {
@@ -70,7 +70,7 @@ namespace Device
                             &robot_set->referee_info.game_result_ref,
                             rx_data + 7,
                             sizeof(Referee::GameResult));
-                        // printf("game result\n");
+                        printf("game result\n");
                         break;
                     }
                     case Referee::RefereeCmdId::REFEREE_WARNING_CMD: {
@@ -85,10 +85,10 @@ namespace Device
                             &robot_set->referee_info.game_robot_status_data,
                             rx_data + 7,
                             sizeof(Referee::GameRobotStatus));
-                        // LOG_INFO(
-                        //     "robot status chassis power limit: %d %d\n",
-                        //     robot_set->referee_info.game_robot_status_data.chassis_power_limit,
-                        //     robot_set->referee_info.game_robot_status_data.robot_level);
+                        LOG_INFO(
+                            "robot status chassis power limit: %d %d\n",
+                            robot_set->referee_info.game_robot_status_data.chassis_power_limit,
+                            robot_set->referee_info.game_robot_status_data.robot_level);
                         break;
                     }
                     case Referee::RefereeCmdId::POWER_HEAT_DATA_CMD: {
@@ -96,9 +96,9 @@ namespace Device
                             &robot_set->referee_info.power_heat_data,
                             rx_data + 7,
                             sizeof(Referee::PowerHeatData));
-                        // printf(
-                        //     "power heat %d\n",
-                        //     robot_set->referee_info.power_heat_data.chassis_power_buffer);
+                        printf(
+                            "power heat %d\n",
+                            robot_set->referee_info.power_heat_data.chassis_power_buffer);
                         break;
                     }
                     case Referee::RefereeCmdId::BULLET_REMAINING_CMD: {

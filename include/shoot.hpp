@@ -23,6 +23,7 @@ namespace Shoot
 
         int jam_time = 0;
         int back_time = 0;
+        int gimbal_id = 0;
 
         Hardware::DJIMotor left_friction;
         Hardware::DJIMotor right_friction;

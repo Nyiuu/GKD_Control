@@ -22,33 +22,91 @@ namespace Device
     }
 
     void Rc_Controller::unpack(const Types::ReceivePacket_RC_CTRL &pkg) {
+        float vx = 0, vy = 0;
+        float speed = .5;
+        if (pkg.key & 0x1)
+            vx++;
+        if (pkg.key & 0x2)
+            vx--;
+        if (pkg.key & 0x4)
+            vy--;
+        if (pkg.key & 0x8)
+            vy++;
+        
+        robot_set->vx_set = vx * speed;
+        robot_set->vy_set = vy * speed;
+        if (pkg.key)
+        LOG_INFO("key : %d\n", pkg.key);
+
+        static std::vector<int> key_status(8);
+
+        if (pkg.key & 0x40)
+        {
+            if (key_status[0] == 0)
+                robot_set->wz_set = 1 - robot_set->wz_set;
+            key_status[0] = 1;
+        }
+        else
+        {
+            key_status[0] = 0;
+        }
+
+        if (pkg.key & 0x80)
+        {
+            if (key_status[1] == 0)
+                robot_set->friction_open = !robot_set->friction_open;
+            key_status[1] = 1;
+        }
+        else
+        {
+            key_status[1] = 0;
+        }
+        
+        static bool skip_control = false;
+        if (pkg.mouse_r)
+        {
+            if (key_status[2] == 0)
+                skip_control = !skip_control;
+            key_status[2] = 1;
+        }
+        else
+        {
+            key_status[2] = 0;
+        }
+
+            
+
+        if (pkg.mouse_l)
+        {
+            robot_set->shoot_open = 1;
+        }
+        else
+        {
+            robot_set->shoot_open = 0;
+        }
+
+        if (skip_control)
+        return;
+        
+        robot_set->gimbalT_1_yaw_set += pkg.mouse_x / 2000.;
+        robot_set->gimbalT_2_yaw_set += pkg.mouse_x / 2000.;
+        // robot_set->gimbalT_1_pitch_set += pkg.mouse_y / 40;
+        static bool use_key = false;
+        if (pkg.key & 0xff)
+        {
+            use_key = true;
+        }
+
+        if (use_key)
+            return;
+
+
         // LOG_INFO("rc controller ch1 %d %d %d %d\n", pkg.s1, pkg.s2, pkg.ch1, pkg.ch3);
         if (pkg.s1 == 2 && pkg.s2 == 2 && pkg.ch4 == -660) {
             inited = true;
         }
 
         // auto-aim, disable control
-        static int last_p2 = 0;
-        if (last_p2 == 2 && pkg.s2 != 2) {
-            IO::io<SERIAL>["/dev/IMU_HERO"]->send(static_cast<uint8_t>(0x5A));
-            LOG_INFO("send serial\n");
-        }
-        last_p2 = pkg.s2;
-
-        if (pkg.s2 == 1) {
-            robot_set->friction_open = true;
-            // :robot_set->gimbalT_1_pitch_set = 0;
-        }
-        else {
-
-            robot_set->friction_open = false;
-        }
-
-        if (pkg.ch4 == 660)
-            robot_set->shoot_open = robot_set->cv_fire;
-        else
-            robot_set->shoot_open = false;
-
         if (pkg.s1 == 2)
             return;
 
@@ -70,9 +128,9 @@ namespace Device
                 robot_set->wz_set = 0;
 
             if (pkg.ch4 == 660)
-                robot_set->shoot_open = true;
+                robot_set->shoot_open = 1;
             else
-                robot_set->shoot_open = false;
+                robot_set->shoot_open = 0;
 
             if (pkg.s2 == 1)
                 robot_set->friction_open = true;
