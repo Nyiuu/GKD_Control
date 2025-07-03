@@ -15,19 +15,33 @@ namespace Practice {
     private:
         // TODO: 使用unordered_map存储设备，键为string，值为智能指针
         // 提示：std::unordered_map<std::string, std::unique_ptr<DeviceType>> devices_;
-        
+        std::unordered_map<std::string, std::unique_ptr<DeviceType>> devices_;
+        size_t size_ = 0;
     public:
         // TODO: 实现析构函数（智能指针会自动管理内存）
-        
+        ~IOManager() = default;
         // TODO: 实现[]操作符重载，返回设备指针
-        // DeviceType* operator[](const std::string& name) const;
-        
+        DeviceType* operator[](const std::string& name) const {
+            auto p = devices_.find(name);
+            if(p == devices_.end()){
+                std::cerr << "non-exist device" << std::endl;
+                return nullptr;
+            }
+            return p->second.get();       
+        }
+
         // TODO: 实现设备注册函数，使用完美转发
-        // template<typename... Args>
-        // void register_device(const std::string& name, Args&&... args);
-        
+        template<typename... Args>
+        void register_device(const std::string& name, Args&&... args) {
+            DeviceType* device_ptr = new DeviceType(std::forward<Args>(args)...);
+            devices_.insert(std::pair(name, device_ptr));
+            size_++;
+        }
+
         // TODO: 实现设备数量查询
-        // size_t size() const;
+        size_t size() const { 
+            return this->size_;
+        }
     };
     
     // 简单的测试设备类

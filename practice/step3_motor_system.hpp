@@ -1,4 +1,5 @@
 #pragma once
+#include <iterator>
 #include <thread>
 #include <mutex>
 #include <chrono>
@@ -7,6 +8,7 @@
 #include <unordered_map>
 #include <iostream>
 #include <atomic>
+#include <string>
 
 // 第三步：实现简化的电机驱动系统
 // 学习目标：线程管理、RAII、设计模式的综合运用
@@ -29,6 +31,13 @@ namespace Practice {
         
         // TODO: 实现构造函数，支持编译时类型检查
         // 提示：可以参考原项目的TypeCast设计
+        consteval MotorConfig (const int type_) {
+            switch (type_) {
+                case 3508: type = MotorType::M3508;
+                case 6020: type = MotorType::M6020;
+                default: type = MotorType::INVALID;
+            }
+        }
     };
     
     // 模拟的通信接口
@@ -77,28 +86,46 @@ namespace Practice {
         
     public:
         // TODO: 实现构造函数
-        // explicit Motor(const MotorConfig& config);
+        explicit Motor(const MotorConfig& config) {
+            type_ = config.type;
+            motor_id_ = config.motor_id;
+            reduction_ratio_ = config.reduction_ratio;
+        }
         
         // TODO: 实现禁用复制和移动
-        // Motor(const Motor&) = delete;
-        // Motor& operator=(const Motor&) = delete;
-        // Motor(Motor&&) = delete;
-        // Motor& operator=(Motor&&) = delete;
+        Motor(const Motor&) = delete;
+        Motor& operator=(const Motor&) = delete;
+        Motor(Motor&&) = delete;
+        Motor& operator=(Motor&&) = delete;
         
         // TODO: 实现设置目标电流
-        // void set_current(int16_t current);
+        void set_current(int16_t current) {
+            data_.current = current;
+        }
         
         // TODO: 实现获取电机数据
-        // const MotorData& get_data() const;
+        const MotorData& get_data() const {
+            return data_;  
+        }
         
         // TODO: 实现电机使能
-        // void enable();
+        void enable() {
+           enabled_ = true;
+        }
         
         // TODO: 获取电机信息
-        // int get_id() const;
-        // const std::string& get_name() const;
-        // int16_t get_target_current() const;
-        // bool is_enabled() const;
+        int get_id() const {
+            return motor_id_;
+        }
+        const std::string& get_name() const {
+            return name_;
+        }
+        int16_t get_target_current() const {
+            return data_.current;
+        }
+        bool is_enabled() const {
+            return enabled_;
+        }
         
         // 模拟更新电机状态（在实际项目中这来自CAN消息）
         void update_status(float angle, float speed, float current, float temp) {
@@ -125,66 +152,35 @@ namespace Practice {
         
     public:
         // TODO: 实现构造函数和析构函数
-        // MotorManager();
-        // ~MotorManager();
+        MotorManager() = default;
+        ~MotorManager() = default;
         
         // TODO: 注册接口
-        // void register_interface(const std::string& name);
+        void register_interface(const std::string& name) {
+            
+        }
         
         // TODO: 注册电机
-        // void register_motor(const MotorConfig& config);
+        void register_motor(const MotorConfig& config) {
+            
+        }
         
         // TODO: 启动管理器
-        // void start();
+        void start();
         
         // TODO: 停止管理器
-        // void stop();
+        void stop();
         
         // TODO: 获取电机指针
-        // Motor* get_motor(const std::string& interface_name, int motor_id);
+        Motor* get_motor(const std::string& interface_name, int motor_id);
         
     private:
         // TODO: 控制线程主循环
-        // void control_loop();
+        void control_loop();
         
         // TODO: 发送电机控制指令
-        // void send_motor_commands(const std::string& interface_name, 
-        //                         const std::vector<std::unique_ptr<Motor>>& motors);
+        void send_motor_commands(const std::string& interface_name, 
+                                 const std::vector<std::unique_ptr<Motor>>& motors);
     };
 }
 
-// 使用示例
-/*
-int main() {
-    Practice::MotorManager manager;
-    
-    // 注册接口
-    manager.register_interface("CAN_CHASSIS");
-    manager.register_interface("CAN_GIMBAL");
-    
-    // 注册电机
-    manager.register_motor({Practice::MotorType::M3508, "CAN_CHASSIS", 1, 1.0f/19.0f});
-    manager.register_motor({Practice::MotorType::M3508, "CAN_CHASSIS", 2, 1.0f/19.0f});
-    manager.register_motor({Practice::MotorType::M6020, "CAN_GIMBAL", 1, 1.0f});
-    
-    // 启动管理器
-    manager.start();
-    
-    // 模拟运行
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    
-    // 控制电机
-    auto* motor1 = manager.get_motor("CAN_CHASSIS", 1);
-    if (motor1) {
-        motor1->set_current(1000);
-    }
-    
-    // 再运行一段时间
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-    
-    // 停止管理器
-    manager.stop();
-    
-    return 0;
-}
-*/ 
