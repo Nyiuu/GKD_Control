@@ -29,38 +29,50 @@ namespace Device
 #ifndef CONFIG_SENTRY
         float vx = 0, vy = 0;
         float speed = 1;
-        if (pkg.key & 0x1)
+
+        if (pkg.key & KEY_D) {
             vx++;
-        if (pkg.key & 0x2)
+        }
+        if (pkg.key & KEY_A) {
             vx--;
-        if (pkg.key & 0x4)
+        }
+        if (pkg.key & KEY_S) {
             vy--;
-        if (pkg.key & 0x8)
+        }
+        if (pkg.key & KEY_W) {
             vy++;
+        }
 
         robot_set->vx_set = vx * speed;
         robot_set->vy_set = vy * speed;
-        if (pkg.key)
+
+        if (pkg.key) {
             LOG_INFO("key : %d\n", pkg.key);
+        }
 
-        static std::vector<int> key_status(8);
+        // 静态变量
+        static bool wz_key_pressed_last = false;
+        static bool friction_key_pressed_last = false;
 
-        if (pkg.key & 0x40) {
-            if (key_status[0] == 0)
+        // 切换自旋状态
+        if (pkg.key & KEY_R) {
+            if (!wz_key_pressed_last) {
                 robot_set->wz_set = 1 - robot_set->wz_set;
-            key_status[0] = 1;
+            }
+            wz_key_pressed_last = true;
         } else {
-            key_status[0] = 0;
+            wz_key_pressed_last = false;
         }
 
-        if (pkg.key & 0x80) {
-            if (key_status[1] == 0)
+        // 切换摩擦轮状态
+        if (pkg.key & KEY_F) {
+            if (!friction_key_pressed_last) {
                 robot_set->friction_open = !robot_set->friction_open;
-            key_status[1] = 1;
+            }
+            friction_key_pressed_last = true;
         } else {
-            key_status[1] = 0;
+            friction_key_pressed_last = false;
         }
-
         if (pkg.mouse_r || (pkg.s1 == 2 && pkg.s2 == 1)) {
             robot_set->auto_aim_status = true;
             // LOG_INFO("auto aim status : %d\n", pkg.s1);

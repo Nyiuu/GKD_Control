@@ -6,6 +6,14 @@
 #include "robot.hpp"
 #include "types.hpp"
 
+#define KEY_D 0x1
+#define KEY_A 0x2
+#define KEY_S 0x4
+#define KEY_W 0x8
+#define KEY_R 0x40
+#define KEY_F 0x80
+
+
 namespace Device
 {
     class Rc_Controller : public DeviceBase
