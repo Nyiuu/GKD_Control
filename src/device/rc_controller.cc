@@ -50,7 +50,6 @@ namespace Device
             LOG_INFO("key : %d\n", pkg.key);
         }
 
-        // 静态变量
         static bool wz_key_pressed_last = false;
         static bool friction_key_pressed_last = false;
 
@@ -73,6 +72,8 @@ namespace Device
         } else {
             friction_key_pressed_last = false;
         }
+
+
         if (pkg.mouse_r || (pkg.s1 == 2 && pkg.s2 == 1)) {
             robot_set->auto_aim_status = true;
             // LOG_INFO("auto aim status : %d\n", pkg.s1);
