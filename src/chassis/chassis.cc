@@ -5,6 +5,7 @@
 #include "chassis_config.hpp"
 #include "robot_type_config.hpp"
 #include "user_lib.hpp"
+#include "status_log.hpp"
 
 namespace Chassis
 {
@@ -75,9 +76,9 @@ namespace Chassis
                     objs[i].pidMaxOutput = 14000;
                 }
                 static Power::PowerObj *pObjs[4] = { &objs[0], &objs[1], &objs[2], &objs[3] };
-                float *cmd_power = power_manager.getControlledOutput(pObjs);
-
+                std::array<float, 4> cmd_power = power_manager.getControlledOutput(pObjs);
                 for (int i = 0; i < 4; ++i) {
+                    log_status("chassis" + i.to_string(), cmd_power[i].to_string()); //状态日志
                     motors[i].give_current = cmd_power[i];
                 }
             }

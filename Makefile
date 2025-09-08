@@ -55,35 +55,11 @@ dirs:
 	@echo -e + $(BLUE)MKDIR$(END) $(BUILD_DIR)
 	@mkdir -p $(BUILD_DIR)
 
-# Setup can0 can1 and serial interfase
-os-deps:
-	@sudo ip link set can0 up type can bitrate 1000000
-	@echo -e + $(BLUE)CAN0$(END) $(GREEN)UP$(END)
-	@sudo ip link set can1 up type can bitrate 1000000
-	@echo -e + $(BLUE)CAN1$(END) $(GREEN)UP$(END)
-	@sudo chmod -R 777 /dev/ttyACM0
-	@echo -e + $(BLUE)ACM0$(END) $(GREEN)UP$(END)
-
 run: all
 	$(BUILD_DIR)/$(BIN)
 
 clean-build: clean
 	@make all -j8
-
-to-hero:
-	@sudo docker exec --workdir /home/zzsunil/dev/cpp/GKD_Control 9d33ed2d8c3c make hero -j8
-	sshpass -p 1 scp build/rx78-2 fish@192.168.1.10:/home/fish/dev
-	#@sudo docker exec --workdir /home/zzlinus/dev/cpp/NeoRMControl_OneForALL  a30b5228ace8 make infantry -j8
-	#sshpass -p 1 scp build/rx78-2 gkd@192.168.1.204:/home/gkd/dev
-	#sshpass -p 1 ssh gkd@192.168.1.4 "/home/gkd/dev/rx78-2"
-
-to-infantry:
-	@sudo docker exec --workdir /home/zzsunil/dev/cpp/GKD_Control 9d33ed2d8c3c make infantry -j8
-	sshpass -p 1 scp build/rx78-2 gkd@192.168.1.203:/home/gkd/dev
-
-to-sentry:
-	@sudo docker exec --workdir /home/zzsunil/dev/cpp/GKD_Control 9d33ed2d8c3c make sentry -j8
-	sshpass -p 1 scp build/rx78-2 gkd@192.168.1.211:/home/gkd/dev
 
 serial: $(SERIAL_DIR)
 	@$(MAKE) -C $< -j8

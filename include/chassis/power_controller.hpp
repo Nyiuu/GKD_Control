@@ -7,7 +7,7 @@
 
 #include <cstdint>
 #include <deque>
-
+#include <array>
 #include "dji_motor.hpp"
 #include "pid_controller.hpp"
 #include "referee.hpp"
@@ -145,7 +145,7 @@ namespace Power
         std::shared_ptr<Device::Dji_referee> referee;
 
         void init(const std::shared_ptr<Robot::Robot_set> &robot);
-        float *getControlledOutput(PowerObj *objs[4]);
+        std::array<float, 4> getControlledOutput(PowerObj *objs[4]);
         void setMaxPowerConfigured(float maxPower);
         void setMode(uint8_t mode);
         void powerDaemon [[noreturn]] ();
@@ -185,7 +185,7 @@ namespace Power
      * necessary data from the PID controller
      * @retval The controlled output torque current
      */
-    float *getControlledOutput(PowerObj *objs[4]);
+    std::array<float, 4> getControlledOutput(PowerObj *objs[4]);
 
     /**
      * @brief return the power status of the chassis

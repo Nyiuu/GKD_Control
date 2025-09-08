@@ -1,4 +1,3 @@
-#!/sbin/python3
 import matplotlib.pyplot as plt
 
 # 初始化存储数据的列表

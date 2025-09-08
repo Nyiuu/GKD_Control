@@ -1,8 +1,8 @@
 #include "device/rc_controller.hpp"
-
 #include "io.hpp"
 #include "serial_interface.hpp"
 #include "types.hpp"
+#include "status_log.hpp"
 
 namespace Device
 {
@@ -25,6 +25,8 @@ namespace Device
         if (pkg.s1 == S1_DOWN && pkg.s2 == S2_DOWN && pkg.ch4 == ROLL_UP_MAX) {
             inited = true;
         }
+
+        log_status("rc_package", (std::ostringstream() << pkg)).str();
 
 #ifndef CONFIG_SENTRY 
         float vx = 0, vy = 0;
