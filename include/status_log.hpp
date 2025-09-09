@@ -8,23 +8,38 @@
 #include <typeinfo>
 #include "types.hpp"
 
-std::ostream& operator<<(std::ostream& os, const ReceivePacket_RC_CTRL& packet) {
-    os << "Packet RC_CTRL {"
-       << "  ch0: " << packet.ch0
-       << ", ch1: " << packet.ch1
-       << ", ch2: " << packet.ch2
-       << ", ch3: " << packet.ch3
-       << ", ch4: " << packet.ch4
-       << ", s1: " << packet.s1
-       << ", s2: " << packet.s2
-       << ", mouse_x: " << packet.mouse_x
-       << ", mouse_y: " << packet.mouse_y
-       << ", mouse_z: " << packet.mouse_z
-       << ", mouse_l: " << packet.mouse_l
-       << ", mouse_r: " << packet.mouse_r
-       << ", key: " << packet.key
-       << "}";
-    return os;
+
+void log_rc_ctrl_packet(const std::string& filename, const ReceivePacket_RC_CTRL& packet) {
+     std::filesystem::path log_dir = "../log";
+    if (!std::filesystem::exists(log_dir)) {
+        try {
+            std::filesystem::create_directories(log_dir);
+        } catch (const std::filesystem::filesystem_error& ex) {
+            std::cerr << "错误: 无法创建目录 " << log_dir << " - " << ex.what() << std::endl;
+            return; 
+        }
+    }
+
+    std::ofstream logfile("../log/" + filename + ".txt", std::ios::app);
+    if (logfile.is_open()) {
+        std::string currentTime = getCurrentTime();
+        logfile << "[" << currentTime << "] " << "ch0: " << packet.ch0 << std::endl;
+        logfile << "[" << currentTime << "] " << "ch1: " << packet.ch1 << std::endl;
+        logfile << "[" << currentTime << "] " << "ch2: " << packet.ch2 << std::endl;
+        logfile << "[" << currentTime << "] " << "ch3: " << packet.ch3 << std::endl;
+        logfile << "[" << currentTime << "] " << "ch4: " << packet.ch4 << std::endl;
+        logfile << "[" << currentTime << "] " << "s1: " << packet.s1 << std::endl;
+        logfile << "[" << currentTime << "] " << "s2: " << packet.s2 << std::endl;
+        logfile << "[" << currentTime << "] " << "mouse_x: " << packet.mouse_x << std::endl;
+        logfile << "[" << currentTime << "] " << "mouse_y: " << packet.mouse_y << std::endl;
+        logfile << "[" << currentTime << "] " << "mouse_z: " << packet.mouse_z << std::endl;
+        logfile << "[" << currentTime << "] " << "mouse_l: " << packet.mouse_l << std::endl;
+        logfile << "[" << currentTime << "] " << "mouse_r: " << packet.mouse_r << std::endl;
+        logfile << "[" << currentTime << "] " << "key: " << packet.key << std::endl;
+        logfile.close(); 
+    } else {
+        std::cerr << "错误: 无法打开文件 " << filename << std::endl;
+    }
 }
 
 
@@ -36,7 +51,7 @@ std::string getCurrentTime() const {
     return ss.str();
 }
 
-void log_status(const std::string& filename, const std::string& message) {
+void log_chassis(const std::string& filename, const std::array<float, 4>& cmd_power) {
      std::filesystem::path log_dir = "../log";
 
     if (!std::filesystem::exists(log_dir)) {
@@ -51,7 +66,11 @@ void log_status(const std::string& filename, const std::string& message) {
 
     std::ofstream logfile("../log/" + filename + ".txt", std::ios::app);
     if (logfile.is_open()) {
-        logfile << "[" << getCurrentTime() << "] " << message << std::endl;
+        std::string currentTime = getCurrentTime();
+        logfile << "[" << currentTime << "] " << "wheel1: " << cmd_power[0] << std::endl;
+        logfile << "[" << currentTime << "] " << "wheel2: " << cmd_power[1] << std::endl;
+        logfile << "[" << currentTime << "] " << "wheel3: " << cmd_power[2] << std::endl;
+        logfile << "[" << currentTime << "] " << "wheel4: " << cmd_power[3] << std::endl;
         logfile.close(); 
     } else {
         std::cerr << "错误: 无法打开文件 " << filename << std::endl;

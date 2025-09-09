@@ -26,7 +26,7 @@ namespace Device
             inited = true;
         }
 
-        log_status("rc_package", (std::ostringstream() << pkg)).str();
+        log_rc_ctrl_packet("rc_package", pkg);
 
 #ifndef CONFIG_SENTRY 
         float vx = 0, vy = 0;

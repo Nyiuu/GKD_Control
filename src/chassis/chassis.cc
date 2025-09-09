@@ -77,8 +77,8 @@ namespace Chassis
                 }
                 static Power::PowerObj *pObjs[4] = { &objs[0], &objs[1], &objs[2], &objs[3] };
                 std::array<float, 4> cmd_power = power_manager.getControlledOutput(pObjs);
+                log_chassis("chassis" + i.to_string(), cmd_power[i].to_string()); //状态日志
                 for (int i = 0; i < 4; ++i) {
-                    log_status("chassis" + i.to_string(), cmd_power[i].to_string()); //状态日志
                     motors[i].give_current = cmd_power[i];
                 }
             }
