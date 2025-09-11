@@ -11,7 +11,7 @@
 #include "power_controller.hpp"
 #include "robot.hpp"
 #include "types.hpp"
-
+#include "monitor_config.hpp"
 namespace Chassis
 {
     class Chassis
@@ -57,6 +57,7 @@ namespace Chassis
 
         std::deque<Hardware::DJIMotor> motors;
         std::shared_ptr<Robot::Robot_set> robot_set;
+        Monitor::MonitorConfig monitor_config;
     };
 }  // namespace Chassis
 

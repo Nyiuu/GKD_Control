@@ -1,11 +1,9 @@
 #include "chassis/chassis.hpp"
 
 #include <thread>
-
-#include "chassis_config.hpp"
+#include "socket_interface.hpp"
 #include "robot_type_config.hpp"
 #include "user_lib.hpp"
-#include "status_log.hpp"
 
 namespace Chassis
 {
@@ -39,6 +37,11 @@ namespace Chassis
             wheels_pid[i] = Pid::PidPosition(
                 config.wheel_speed_pid_config, motors[i].data_.output_linear_velocity);
         }
+
+        IO::io<SOCKET>["Monitor"]->add_client(
+            monitor_config.header, monitor_config.ip, monitor_config.port);
+        
+
     }
 
     [[noreturn]] void Chassis::task() {
@@ -77,8 +80,11 @@ namespace Chassis
                 }
                 static Power::PowerObj *pObjs[4] = { &objs[0], &objs[1], &objs[2], &objs[3] };
                 std::array<float, 4> cmd_power = power_manager.getControlledOutput(pObjs);
-                log_chassis("chassis_log", cmd_power); //状态日志
+
+                auto monitor_datas = Monitor::get_m_data(cmd_power);
+
                 for (int i = 0; i < 4; ++i) {
+                    IO::io<SOCKET>["Monitor"]->send()
                     motors[i].give_current = cmd_power[i];
                 }
             }

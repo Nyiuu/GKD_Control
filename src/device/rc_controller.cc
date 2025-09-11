@@ -26,8 +26,6 @@ namespace Device
             inited = true;
         }
 
-        log_rc_ctrl_packet("rc_package", pkg);
-
 #ifndef CONFIG_SENTRY 
         float vx = 0, vy = 0;
         float speed = 1;
