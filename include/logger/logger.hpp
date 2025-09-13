@@ -172,6 +172,14 @@ class Logger:public Singleton<Logger>{
             push_message<LogUpdateValueMessage>(hash,value);
         }
 
+        inline void push_console_message(const std::string& msg){
+            push_message<LogConsoleMessage> (msg);
+        }
+
+        inline void push_message_box(const std::string& msg){
+            push_message<LogMessageBoxMessage> (msg);
+        }
+
         [[noreturn]] inline void task() {
             while (true) {
                 std::string buffer;

@@ -83,6 +83,7 @@ namespace Chassis
                 //logger
                 for (int i = 0; i < 4; ++i) {
                    logger.push_value("chassis." + std::to_string(i), cmd_power[i]);
+                   logger.push_console_message("<h1>111</h1>");
                 }
 
 
