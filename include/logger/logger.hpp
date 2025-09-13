@@ -175,9 +175,8 @@ class Logger:public Singleton<Logger>{
                 continue;
             }
 
-            LOG_INFO("连上了");
             while (true) {
-                std::vector<std::string> buffers;
+                std::vector<std::string> buffers(16);
                 std::string buffer = "";
 
                 _q.wait_dequeue_bulk(buffers.begin(),16);
