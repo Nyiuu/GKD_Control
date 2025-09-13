@@ -23,8 +23,6 @@ namespace Robot
     Robot_ctrl::~Robot_ctrl() = default;
 
     void Robot_ctrl::start_init() {
-
-        IFDEF(__DEBUG__, logger.init());
         // NOTE: register motors here
 
         // cv_controller_.init(robot_set);

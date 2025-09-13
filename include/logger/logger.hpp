@@ -134,27 +134,6 @@ class Logger:public Singleton<Logger>{
         int client_socket;
 
     public:
-
-        inline void init() {
-            client_socket = socket(AF_INET, SOCK_STREAM, 0);
-            if (client_socket < 0) {
-                return;
-            }
-
-            sockaddr_in server_addr;
-            server_addr.sin_family = AF_INET;
-            server_addr.sin_port = htons(8080);
-
-            inet_pton(AF_INET, "192.168.1.116", &server_addr.sin_addr);
-
-            if (connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-                LOG_ERR("没连上");
-                return;
-            }
-
-            LOG_ERR("连上了");
-        }
-
         template<typename T,typename... Args>
         inline void push_message(Args&&... args){
             auto message = T::build(std::forward<Args>(args)...);
@@ -181,13 +160,31 @@ class Logger:public Singleton<Logger>{
         }
 
         [[noreturn]] inline void task() {
+            client_socket = socket(AF_INET, SOCK_STREAM, 0);
+            if (client_socket < 0) {
+            }
+
+            sockaddr_in server_addr;
+            server_addr.sin_family = AF_INET;
+            server_addr.sin_port = htons(8080);
+
+            inet_pton(AF_INET, "192.168.1.116", &server_addr.sin_addr);
+
+            while (connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+                LOG_ERR("没连上");
+                continue;
+            }
+
+            LOG_INFO("连上了");
             while (true) {
-                std::string buffer;
+                std::vector<std::string> buffers;
+                std::string buffer = "";
 
-                _q.wait_dequeue(buffer);
-                if (buffer.empty())
-                    continue;
+                _q.wait_dequeue_bulk(buffers.begin(),16);
+                for(int i=0;i<16;i++)
+                    buffer += buffers[i];
 
+                printf("%lu",_q.size_approx());
                 auto is_sent = send(client_socket, buffer.data(), buffer.length(), 0);
 
                 if(is_sent < 0) {
