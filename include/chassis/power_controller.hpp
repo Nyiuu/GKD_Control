@@ -24,6 +24,8 @@
 
 #include "utils/RLS.hpp"
 
+#include "logger/logger.hpp"
+
 namespace Power
 {
 

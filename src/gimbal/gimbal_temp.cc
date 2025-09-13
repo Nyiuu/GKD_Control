@@ -167,6 +167,8 @@ namespace Gimbal
         while (true) {
             update_data();
             // LOG_INFO("%d: yaw set %f, imu yaw %f\n", config.header, *yaw_set, imu.yaw);
+            logger.push_value("gimbal.yaw.set", (double)*yaw_set);
+            logger.push_value("gimbal.yaw.imu", (double)imu.yaw);
             if (robot_set->mode == Types::ROBOT_MODE::ROBOT_NO_FORCE) {
                 yaw_motor.give_current = 0;
                 pitch_motor.give_current = 0;
