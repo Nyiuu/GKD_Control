@@ -57,13 +57,6 @@ namespace Chassis
 
         std::deque<Hardware::DJIMotor> motors;
         std::shared_ptr<Robot::Robot_set> robot_set;
-
-       std::array<LogRegisterNameMessage, 4> chassis_register_name = {
-            LogRegisterNameMessage("chassis.1"),
-            LogRegisterNameMessage("chassis.2"),
-            LogRegisterNameMessage("chassis.3"),
-            LogRegisterNameMessage("chassis.4")
-        };
     };
 }  // namespace Chassis
 

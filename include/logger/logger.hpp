@@ -2,6 +2,7 @@
 
 #include "utils.hpp"
 #include <concurrentqueue.h>
+#include <blockingconcurrentqueue.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -15,6 +16,8 @@
 #include <unordered_map>
 #include <sstream>
 #include <cstring>
+#include <unordered_set>
+#include <utility>
 #include "singleton.hpp"
 
 //tcp发送端初始化
@@ -23,165 +26,112 @@
 
 //tcp发送
 
-enum class MessageType : uint8_t{
-        RegisterName,
-        UpdateValue,
-        Console,
-        MessageBox
-    };
-
-struct LogMessage{
-    
-    uint16_t package_size;
-    MessageType type;
-
-    virtual ~LogMessage() = default;
-
-    virtual std::string to_data() = 0;
+enum class MessageType : uint8_t {
+    RegisterName = 0x00,
+    UpdateValue  = 0x01,
+    Console      = 0x02,
+    MessageBox   = 0x03   // 注意协议里 MessageBox 的 type 应该和 Console 区分开，这里改为 0x03
 };
 
-struct LogRegisterNameMessage : public LogMessage{
-    uint8_t name_length;
-    std::string name;
+struct LogMessage {
+    inline static std::string build(const std::string& data, MessageType type) {
+        uint16_t package_size = static_cast<uint16_t>(data.size() + sizeof(uint16_t) + sizeof(uint8_t));
+        // = 2字节长度 + 1字节类型 + data.size()
 
-    LogRegisterNameMessage(const std::string& var_name) {
-        this->package_size = sizeof(LogMessage) + sizeof(name_length) + var_name.length();
-        this->type = MessageType::RegisterName;
-        this->name_length = static_cast<uint8_t>(var_name.length());
-        this->name = var_name;
+        std::string res;
+        res.resize(package_size);
+
+        // 拷贝长度
+        memcpy(res.data(), &package_size, sizeof(package_size));
+        // 写入类型
+        res[2] = static_cast<char>(type);
+        // 拷贝 payload
+        memcpy(res.data() + 3, data.data(), data.size());
+
+        return res;
     }
-
-    ~LogRegisterNameMessage() = default;
-
-    std::string to_data() override{
-        std::string buffer;
-        buffer.resize(this->package_size);
-        char* ptr = buffer.data();
-
-        std::memcpy(ptr, &this->package_size, sizeof(this->package_size));
-        ptr += sizeof(this->package_size);
-        std::memcpy(ptr, &this->type, sizeof(this->type));
-        ptr += sizeof(this->type);
-
-        std::memcpy(ptr, &this->name_length, sizeof(this->name_length));
-        ptr += sizeof(this->name_length);
-
-        std::memcpy(ptr, this->name.data(), this->name_length);
-
-        return buffer;
-
-    }
-
-
 };
 
-//待实现
-struct LogUpdateValueMessage : public LogMessage{
-    uint32_t id;
-    double value;
-    
-    LogUpdateValueMessage(std::string name, double var_value) {
-        this->package_size = sizeof(LogUpdateValueMessage);
-        this->type = MessageType::UpdateValue;
-        this->id = hash(name);
-        this->value = var_value;
-    }
+// RegisterName
+struct LogRegisterNameMessage : public LogMessage {
+    static std::string build(uint32_t id, const std::string& name) {
+        uint8_t name_length = static_cast<uint8_t>(name.size());
 
-    ~LogUpdateValueMessage() = default;
+        // payload = id(4) + name_length(1) + name(n)
+        std::string payload;
+        payload.resize(sizeof(uint32_t) + sizeof(uint8_t) + name_length);
 
-    inline uint32_t hash(const std::string& str){
-        unsigned int hash = 5381; 
-        for (char c : str) {
-            hash = ((hash << 5) + hash) + c;
-        }
-        return hash;
-    }
+        // 拷贝 id
+        memcpy(payload.data(), &id, sizeof(id));
+        // 拷贝 name_length
+        payload[sizeof(id)] = static_cast<char>(name_length);
+        // 拷贝 name
+        memcpy(payload.data() + sizeof(id) + sizeof(uint8_t), name.data(), name_length);
 
-    std::string to_data() override{
-        std::string buffer;
-        buffer.resize(this->package_size);
-        char* ptr = buffer.data();
-
-        std::memcpy(ptr, &this->package_size, sizeof(this->package_size));
-        ptr += sizeof(this->package_size);
-        std::memcpy(ptr, &this->type, sizeof(this->type));
-        ptr += sizeof(this->type);
-
-        std::memcpy(ptr, &this->id, sizeof(this->id));
-        ptr += sizeof(this->id);
-
-        std::memcpy(ptr, &this->value, this->value);
-
-        return buffer;
-
+        return LogMessage::build(payload, MessageType::RegisterName);
     }
 };
 
 
-//待实现
-struct LogConsoleMessage : public LogMessage{
-    uint16_t message_length;
-    std::string message;
+// UpdateValue
+struct LogUpdateValueMessage : public LogMessage {
+    static std::string build(uint32_t id, double value) {
+        std::string payload;
+        payload.resize(sizeof(uint32_t) + sizeof(double));
 
-    LogConsoleMessage(const std::string& msg) {
-        this->package_size = sizeof(LogMessage) + sizeof(message_length) + msg.length();
-        this->type = MessageType::Console;
-        this->message_length = static_cast<uint16_t>(msg.length());
-        this->message = msg;
-    }
+        memcpy(payload.data(), &id, sizeof(id));
+        memcpy(payload.data() + sizeof(id), &value, sizeof(value));
 
-    ~LogConsoleMessage() = default;
-
-    std::string to_data() override {
-        return "hello";
+        return LogMessage::build(payload, MessageType::UpdateValue);
     }
 };
 
-//待实现
-struct LogMessageBoxMessage : public LogMessage{
-    uint16_t message_length;
-    std::string message;
+// Console Message
+struct LogConsoleMessage : public LogMessage {
+    static std::string build(const std::string& msg) {
+        uint16_t msg_len = static_cast<uint16_t>(msg.size());
 
-    LogMessageBoxMessage(const std::string& msg) {
-        this->package_size = sizeof(LogMessage) + sizeof(message_length) + msg.length();
-        this->type = MessageType::MessageBox;
-        this->message_length = static_cast<uint16_t>(msg.length());
-        this->message = msg;
+        std::string payload;
+        payload.resize(sizeof(uint16_t) + msg_len);
+
+        memcpy(payload.data(), &msg_len, sizeof(msg_len));
+        memcpy(payload.data() + sizeof(uint16_t), msg.data(), msg.size());
+
+        return LogMessage::build(payload, MessageType::Console);
     }
+};
 
-    ~LogMessageBoxMessage() = default;
+// MessageBox Message
+struct LogMessageBoxMessage : public LogMessage {
+    static std::string build(const std::string& msg) {
+        uint16_t msg_len = static_cast<uint16_t>(msg.size());
 
-    std::string to_data() override {
-        return "hello"; 
+        std::string payload;
+        payload.resize(sizeof(uint16_t) + msg_len);
+
+        memcpy(payload.data(), &msg_len, sizeof(msg_len));
+        memcpy(payload.data() + sizeof(uint16_t), msg.data(), msg.size());
+
+        return LogMessage::build(payload, MessageType::MessageBox);
     }
 };
 
 
 
-
+inline uint32_t string_hash(const std::string& str) {
+    uint32_t hash = 2166136261u;  // FNV offset basis
+    for (unsigned char c : str) {
+        hash ^= c;
+        hash *= 16777619u;        // FNV prime
+    }
+    return hash;
+}
 
 class Logger:public Singleton<Logger>{
     private:
-        
-        std::unordered_map<uint32_t, std::string> _name_map;
-        moodycamel::ConcurrentQueue<std::string> _q;
+        std::unordered_set<std::string> _registered_names;
+        moodycamel::BlockingConcurrentQueue<std::string> _q;
         int client_socket;
-
-        inline void send_data() {
-            std::string buffer;
-            if (_q.try_dequeue(buffer)) {
-                if (buffer.empty()) {
-                    return;
-                }
-                
-                auto is_send = send(client_socket, buffer.data(), buffer.length(), 0);
-
-                if(is_send < 0) {
-                    LOG_ERR("发送失败");
-                    return;
-                } 
-            }
-        }
 
     public:
 
@@ -195,7 +145,7 @@ class Logger:public Singleton<Logger>{
             server_addr.sin_family = AF_INET;
             server_addr.sin_port = htons(8080);
 
-            inet_pton(AF_INET, "192.168.1.23", &server_addr.sin_addr);
+            inet_pton(AF_INET, "192.168.1.116", &server_addr.sin_addr);
 
             if (connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
                 LOG_ERR("没连上");
@@ -203,20 +153,38 @@ class Logger:public Singleton<Logger>{
             }
 
             LOG_ERR("连上了");
+        }
 
+        template<typename T,typename... Args>
+        inline void push_message(Args&&... args){
+            auto message = T::build(std::forward<Args>(args)...);
+            _q.enqueue(message);
+        }
 
+        inline void push_value(const std::string& name,double value){
+            uint32_t hash = string_hash(name);
+
+            if(!_registered_names.contains(name))
+                push_message<LogRegisterNameMessage>(hash,name);
+
+            push_message<LogUpdateValueMessage>(hash,value);
         }
 
         [[noreturn]] inline void task() {
-            while (client_socket >= 0) {
-                send_data();
-            }
-        }
+            while (true) {
+                std::string buffer;
 
-        inline void push_message(LogMessage* msg){            
-#ifdef __DEBUG__
-            _q.enqueue(msg->to_data());      
-#endif
+                _q.wait_dequeue(buffer);
+                if (buffer.empty())
+                    continue;
+
+                auto is_sent = send(client_socket, buffer.data(), buffer.length(), 0);
+
+                if(is_sent < 0) {
+                    LOG_ERR("发送失败");
+                    continue;
+                } 
+            }
         }
 
 };

@@ -39,11 +39,6 @@ namespace Chassis
             wheels_pid[i] = Pid::PidPosition(
                 config.wheel_speed_pid_config, motors[i].data_.output_linear_velocity);
         }
-        
-        //logger init
-        for (int i = 0; i < 4; i++) {
-            logger.push_message(&chassis_register_name[i]);
-        }
 
 
     }
@@ -87,10 +82,8 @@ namespace Chassis
 
                 //logger
                 for (int i = 0; i < 4; ++i) {
-                   auto msg = LogUpdateValueMessage("chassis." + std::to_string(i), cmd_power[i]); 
-                   logger.push_message(&msg);
+                   logger.push_value("chassis." + std::to_string(i), cmd_power[i]);
                 }
-
 
 
                 for (int i = 0; i < 4; ++i) {
