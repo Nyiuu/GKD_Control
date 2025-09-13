@@ -1,5 +1,5 @@
 add_rules("mode.debug", "mode.release")
-add_requires("serial")
+add_requires("serial","concurrentqueue")
 
 option("type")
     set_default("infantry")
@@ -25,9 +25,10 @@ target("GKDControl")
         "include/device",
         "include/device/referee",
         "include/gimbal",
-        "include/utils"
+        "include/utils",
+        "include/logger"
     )
-    add_packages("serial")
+    add_packages("serial","concurrentqueue")
     set_warnings("allextra")
 
     add_options("type")

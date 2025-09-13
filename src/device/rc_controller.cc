@@ -2,7 +2,6 @@
 #include "io.hpp"
 #include "serial_interface.hpp"
 #include "types.hpp"
-#include "status_log.hpp"
 
 namespace Device
 {

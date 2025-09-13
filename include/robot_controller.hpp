@@ -14,6 +14,7 @@
 #include "serial_interface.hpp"
 #include "shoot.hpp"
 #include "socket_interface.hpp"
+#include "logger.hpp"
 
 namespace Robot
 {

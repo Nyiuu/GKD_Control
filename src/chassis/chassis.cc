@@ -1,6 +1,8 @@
 #include "chassis/chassis.hpp"
 
+#include <string>
 #include <thread>
+#include "logger.hpp"
 #include "socket_interface.hpp"
 #include "robot_type_config.hpp"
 #include "user_lib.hpp"
@@ -37,10 +39,12 @@ namespace Chassis
             wheels_pid[i] = Pid::PidPosition(
                 config.wheel_speed_pid_config, motors[i].data_.output_linear_velocity);
         }
-
-        IO::io<SOCKET>["Monitor"]->add_client(
-            monitor_config.header, monitor_config.ip, monitor_config.port);
         
+        //logger init
+        for (int i = 0; i < 4; i++) {
+            logger.push_message(&chassis_register_name[i]);
+        }
+
 
     }
 
@@ -81,10 +85,15 @@ namespace Chassis
                 static Power::PowerObj *pObjs[4] = { &objs[0], &objs[1], &objs[2], &objs[3] };
                 std::array<float, 4> cmd_power = power_manager.getControlledOutput(pObjs);
 
-                auto monitor_datas = Monitor::get_m_data(cmd_power);
+                //logger
+                for (int i = 0; i < 4; ++i) {
+                   auto msg = LogUpdateValueMessage("chassis." + std::to_string(i), cmd_power[i]); 
+                   logger.push_message(&msg);
+                }
+
+
 
                 for (int i = 0; i < 4; ++i) {
-                    IO::io<SOCKET>["Monitor"]->send()
                     motors[i].give_current = cmd_power[i];
                 }
             }
