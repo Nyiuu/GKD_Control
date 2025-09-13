@@ -164,8 +164,10 @@ class Logger:public Singleton<Logger>{
         inline void push_value(const std::string& name,double value){
             uint32_t hash = string_hash(name);
 
-            if(!_registered_names.contains(name))
+            if(!_registered_names.contains(name)){
                 push_message<LogRegisterNameMessage>(hash,name);
+                _registered_names.insert(name);
+            }
 
             push_message<LogUpdateValueMessage>(hash,value);
         }
