@@ -1,6 +1,8 @@
 #pragma once
 
 #include "utils.hpp"
+#include <concurrentqueue.h>
+#include <blockingconcurrentqueue.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -17,13 +19,6 @@
 #include <unordered_set>
 #include <utility>
 #include "singleton.hpp"
-
-// 新增的头文件
-#include <queue>
-#include <mutex>
-#include <condition_variable>
-#include <vector>
-
 
 //tcp发送端初始化
 
@@ -134,22 +129,15 @@ inline uint32_t string_hash(const std::string& str) {
 
 class Logger:public Singleton<Logger>{
     private:
-        std::unordered_set<std::string> _registered_names;        std::queue<std::string> _q;
-        std::mutex _mtx;
-        std::condition_variable _cv;
+        std::unordered_set<std::string> _registered_names;
+        moodycamel::BlockingConcurrentQueue<std::string> _q;
         int client_socket;
 
     public:
         template<typename T,typename... Args>
         inline void push_message(Args&&... args){
             auto message = T::build(std::forward<Args>(args)...);
-            {
-                // 使用 lock_guard 在作用域结束时自动解锁
-                std::lock_guard<std::mutex> lock(_mtx);
-                _q.push(message);
-            }
-            // 通知等待的消费者线程
-            _cv.notify_one();
+            _q.enqueue(message);
         }
 
         inline void push_value(const std::string& name,double value){
@@ -184,30 +172,16 @@ class Logger:public Singleton<Logger>{
 
             while (connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
                 LOG_ERR("没连上");
-                // 实际项目中这里最好加一个延时，避免疯狂重连
-                std::this_thread::sleep_for(std::chrono::seconds(1));
                 continue;
             }
 
             while (true) {
-                std::string buffer;
-                
-                {
-                    std::unique_lock<std::mutex> lock(_mtx);
-                    // 等待直到队列不为空
-                    _cv.wait(lock, [this]{ return !_q.empty(); });
+                std::vector<std::string> buffers(16);
+                std::string buffer = "";
 
-                    size_t count = 0;
-                    while(!_q.empty() && count < 16) {
-                        buffer += _q.front();
-                        _q.pop();
-                        count++;
-                    }
-                } // unique_lock 在此被析构，互斥锁被释放
-
-                if (buffer.empty()) {
-                    continue;
-                }
+                _q.wait_dequeue_bulk(buffers.begin(),16);
+                for(int i=0;i<16;i++)
+                    buffer += buffers[i];
 
                 auto is_sent = send(client_socket, buffer.data(), buffer.length(), 0);
 
@@ -221,3 +195,4 @@ class Logger:public Singleton<Logger>{
 };
 
 #define logger (Logger::instance())
+
