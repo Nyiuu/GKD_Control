@@ -8,6 +8,7 @@
 #include "pid_controller.hpp"
 #include "power_controller.hpp"
 #include "robot_type_config.hpp"
+#include "utils.hpp"
 
 namespace Power
 {
@@ -95,7 +96,7 @@ namespace Power
 
 
 std::array<float, 4> Manager::getControlledOutput(PowerObj *objs[4]) {
-    std::array<float, 4> newTorqueCurrent; // 使用std::array替代静态数组
+    std::array<float, 4> newTorqueCurrent; 
     float torqueConst = 0.3 * ((float)187 / 3591);
     float k0 =
         torqueConst * 20 / 16384;  // torque current rate of the motor, defined as Nm/Output
@@ -296,6 +297,8 @@ std::array<float, 4> Manager::getControlledOutput(PowerObj *objs[4]) {
             samples[0][0] = 0;
             samples[1][0] = 0;
             for (int i = 0; i < 4; i++) {
+                //LOG_INFO("%d", motors[i].motor_measure_.given_current);
+
                 effectivePower += motors[i].motor_measure_.given_current * k0 *
                                   rpm2av(motors[i].motor_measure_.speed_rpm);
                 samples[0][0] += fabsf(rpm2av(motors[i].motor_measure_.speed_rpm));

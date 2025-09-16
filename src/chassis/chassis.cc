@@ -6,6 +6,7 @@
 #include "socket_interface.hpp"
 #include "robot_type_config.hpp"
 #include "user_lib.hpp"
+#include "utils.hpp"
 
 namespace Chassis
 {
@@ -83,11 +84,14 @@ namespace Chassis
                 //logger
                 for (int i = 0; i < 4; ++i) {
                    logger.push_value("chassis." + std::to_string(i), cmd_power[i]);
-                   logger.push_console_message("<h1>111</h1>");
+                //    logger.push_console_message("<h1>111</h1>");
                 }
 
 
                 for (int i = 0; i < 4; ++i) {
+                    if(motors[i].offline()) {
+                        LOG_ERR("chassis_%d offline\n", i + 1);
+                    }
                     motors[i].give_current = cmd_power[i];
                 }
             }
