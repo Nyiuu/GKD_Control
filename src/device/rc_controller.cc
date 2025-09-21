@@ -18,6 +18,7 @@ namespace Device
         }
         serial_interface->register_callback<Types::ReceivePacket_RC_CTRL>(
             [&](const Types::ReceivePacket_RC_CTRL &rp) { unpack(rp); });
+        delta = 0;
     }
 
     void Rc_Controller::unpack(const Types::ReceivePacket_RC_CTRL &pkg) {
@@ -25,6 +26,7 @@ namespace Device
             inited = true;
         }
 
+    if(delta == 0) {       
         logger.push_value("rc.ch0",  pkg.ch0);
         logger.push_value("rc.ch1",  pkg.ch1);
         logger.push_value("rc.ch2",  pkg.ch2);
@@ -38,7 +40,12 @@ namespace Device
         logger.push_value("rc.mouse_l",  pkg.mouse_l);
         logger.push_value("rc.mouse_r",  pkg.mouse_r);
         logger.push_value("rc.key",  pkg.key);
-
+    } else {
+        if(delta == 100) {
+            delta = 0;
+        }
+    }
+    delta++;
 
 #ifndef CONFIG_SENTRY 
         float vx = 0, vy = 0;

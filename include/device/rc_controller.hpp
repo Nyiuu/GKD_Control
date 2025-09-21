@@ -55,5 +55,6 @@ namespace Device
        private:
         std::string serial_name;
         std::shared_ptr<Robot::Robot_set> robot_set;
+        int delta;
     };
 }  // namespace Device
