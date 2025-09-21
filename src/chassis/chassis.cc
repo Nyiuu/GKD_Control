@@ -87,7 +87,6 @@ namespace Chassis
                 //    logger.push_console_message("<h1>111</h1>");
                 }
 
-
                 for (int i = 0; i < 4; ++i) {
                     if(motors[i].offline()) {
                         LOG_ERR("chassis_%d offline\n", i + 1);

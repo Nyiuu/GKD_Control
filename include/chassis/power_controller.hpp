@@ -13,14 +13,10 @@
 #include "referee.hpp"
 #include "robot.hpp"
 #include "super_cap.hpp"
-#define USE_POWER_CONTROLLER TRUE
 
 // If the capacitor is plugged into the circuit, make sure you enable the super
 // cap module successfully Otherwise, it will cause unexpected behavior of the
 // RLS model
-#define USE_SUPER_CAPACITOR TRUE
-
-#define USE_REFEREE_SYSTEM_COMM TRUE
 
 #include "utils/RLS.hpp"
 
@@ -29,20 +25,20 @@
 namespace Power
 {
 
-    constexpr static float refereeFullBuffSet = 60.0f;
-    constexpr static float refereeBaseBuffSet = 50.0f;
-    constexpr static float capFullBuffSet = 250.0f;
-    constexpr static float capBaseBuffSet = 100.0f;
-    constexpr static float error_powerDistribution_set = 20.0f;
-    constexpr static float prop_powerDistribution_set = 15.0f;
+    constexpr static float refereeFullBuffSet = 60.0f; // 裁判系统满功率能量缓冲目标值
+    constexpr static float refereeBaseBuffSet = 50.0f; // 裁判系统基础功率能量缓冲目标值
+    constexpr static float capFullBuffSet = 250.0f; // 超级电容满功率能量缓冲目标值
+    constexpr static float capBaseBuffSet = 100.0f; // 超级电容基础功率能量缓冲目标值
+    constexpr static float error_powerDistribution_set = 20.0f; //功率分配算法的误差阈值
+    constexpr static float prop_powerDistribution_set = 15.0f; // 功率分配算法的比例阈值
 
     // constexpr float MIN_MAXPOWER_CONFIGURED                   = 15.0f;
-    constexpr float MAX_CAP_POWER_OUT = 300.0f;
-    constexpr float CAP_OFFLINE_ENERGY_RUNOUT_POWER_THRESHOLD = 43.0f;
-    constexpr float CAP_OFFLINE_ENERGY_TARGET_POWER = 37.0f;
-    constexpr float MAX_POEWR_REFEREE_BUFF = 60.0f;
-    constexpr float REFEREE_GG_COE = 0.95f;
-    constexpr float CAP_REFEREE_BOTH_GG_COE = 0.85f;
+    constexpr float MAX_CAP_POWER_OUT = 300.0f; // 超级电容最大输出功率
+    constexpr float CAP_OFFLINE_ENERGY_RUNOUT_POWER_THRESHOLD = 43.0f; // 电容离线时能量耗尽的功率阈值
+    constexpr float CAP_OFFLINE_ENERGY_TARGET_POWER = 37.0f; // 电容离线时的目标功率
+    constexpr float MAX_POEWR_REFEREE_BUFF = 60.0f; // 裁判系统最大功率缓冲
+    constexpr float REFEREE_GG_COE = 0.95f; // 裁判系统挂了的功率系数
+    constexpr float CAP_REFEREE_BOTH_GG_COE = 0.85f; // 电容和裁判系统都挂了时的功率系数
 
     /**
      * @brief The Power Limit and max HP enumeration attributed by division, chassis
@@ -55,20 +51,20 @@ namespace Power
      * type changed, there will be problem of distinguishing the chassis type, so we
      * choose HP_FIRST chassis type conservatively, except for sentry
      */
-    constexpr static uint8_t maxLevel = 11U;
+    constexpr static uint8_t maxLevel = 11U; //最高等级
     constexpr static uint8_t HeroChassisPowerLimit_HP_FIRST[maxLevel] = { 0,   55U,  60U, 65U,
                                                                           70U, 75U,  80U, 85U,
-                                                                          90U, 100U, 120U };
+                                                                          90U, 100U, 120U }; // 英雄各等级功率限制
     constexpr static uint8_t InfantryChassisPowerLimit_HP_FIRST[maxLevel] = { 0,   45U, 50U, 55U,
                                                                               60U, 65U, 70U, 75U,
-                                                                              80U, 90U, 100U };
+                                                                              80U, 90U, 100U };// 步兵各等级功率限制
     constexpr static uint8_t SentryChassisPowerLimit = 100U;
 
     enum class Division
     {
-        INFANTRY = 0,
-        HERO,
-        SENTRY
+        INFANTRY, // 0
+        HERO,     // 1
+        SENTRY    // 2
     };
 
     struct PowerObj
@@ -149,8 +145,8 @@ namespace Power
         void init(const std::shared_ptr<Robot::Robot_set> &robot);
         std::array<float, 4> getControlledOutput(PowerObj *objs[4]);
         void setMaxPowerConfigured(float maxPower);
-        void setMode(uint8_t mode);
-        void powerDaemon [[noreturn]] ();
+        void setMode(uint8_t mode); //功率最大值设置
+        [[noreturn]] void powerDaemon (); //电源守护进程
     };
 
 #define POWER_PD_KP 50.0f
@@ -179,6 +175,7 @@ namespace Power
 
     // return the latest feedback referee power limit(before referee disconnected),
     // according to the robot level
+    //TODO 完成定义
     float getLatestFeedbackJudgePowerLimit();
 
     /**
@@ -196,12 +193,6 @@ namespace Power
     const volatile PowerStatus &getPowerStatus();
 
     /**
-     * @brief The power controller module initialization function
-     * @param manager The manager object
-     * @note This function should be called before the scheduler starts
-     */
-
-    /**
      * @brief set the user configured max power
      * @param maxPower The max power value
      * @note The max power configured by this function will compete with the basic
@@ -209,9 +200,6 @@ namespace Power
      */
     void setMaxPowerConfigured(float maxPower);
 
-    void setMode(uint8_t mode);
-
-    void registerPowerCallbackFunc(float (*callback)(void));
 
     /**
      * @brief Enable for disable the automatically parameters update process
@@ -221,5 +209,9 @@ namespace Power
      * @retval None
      */
     void setRLSEnabled(uint8_t isUpdate);
+
+    void setMode(uint8_t mode);
+
+    void registerPowerCallbackFunc(float (*callback)(void));
 
 }  // namespace Power

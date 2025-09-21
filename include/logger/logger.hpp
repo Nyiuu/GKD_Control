@@ -1,6 +1,8 @@
 #pragma once
 
 #include "utils.hpp"
+#include <concurrentqueue.h>
+#include <blockingconcurrentqueue.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -18,13 +20,6 @@
 #include <utility>
 #include "singleton.hpp"
 
-// 新增的头文件
-#include <queue>
-#include <mutex>
-#include <condition_variable>
-#include <vector>
-
-
 //tcp发送端初始化
 
 //入列并转换，用map存储名字
@@ -35,22 +30,20 @@ enum class MessageType : uint8_t {
     RegisterName = 0x00,
     UpdateValue  = 0x01,
     Console      = 0x02,
-    MessageBox   = 0x03   // 注意协议里 MessageBox 的 type 应该和 Console 区分开，这里改为 0x03
+    MessageBox   = 0x03   
 };
 
 struct LogMessage {
-    inline static std::string build(const std::string& data, MessageType type) {
+    static std::string build(const std::string& data, MessageType type) {
         uint16_t package_size = static_cast<uint16_t>(data.size() + sizeof(uint16_t) + sizeof(uint8_t));
         // = 2字节长度 + 1字节类型 + data.size()
 
         std::string res;
         res.resize(package_size);
 
-        // 拷贝长度
         memcpy(res.data(), &package_size, sizeof(package_size));
-        // 写入类型
         res[2] = static_cast<char>(type);
-        // 拷贝 payload
+
         memcpy(res.data() + 3, data.data(), data.size());
 
         return res;
@@ -134,25 +127,19 @@ inline uint32_t string_hash(const std::string& str) {
 
 class Logger:public Singleton<Logger>{
     private:
-        std::unordered_set<std::string> _registered_names;        std::queue<std::string> _q;
-        std::mutex _mtx;
-        std::condition_variable _cv;
+        std::unordered_set<std::string> _registered_names;
+        moodycamel::BlockingConcurrentQueue<std::string> _q;
         int client_socket;
 
     public:
         template<typename T,typename... Args>
         inline void push_message(Args&&... args){
             auto message = T::build(std::forward<Args>(args)...);
-            {
-                // 使用 lock_guard 在作用域结束时自动解锁
-                std::lock_guard<std::mutex> lock(_mtx);
-                _q.push(message);
-            }
-            // 通知等待的消费者线程
-            _cv.notify_one();
+            _q.enqueue(message);
         }
 
-        inline void push_value(const std::string& name,double value){
+
+        void push_value(const std::string& name,double value){
             uint32_t hash = string_hash(name);
 
             if(!_registered_names.contains(name)){
@@ -163,61 +150,15 @@ class Logger:public Singleton<Logger>{
             push_message<LogUpdateValueMessage>(hash,value);
         }
 
-        inline void push_console_message(const std::string& msg){
-            push_message<LogConsoleMessage> (msg);
-        }
+        // TODO
+        void push_console_message(const std::string& msg);
 
-        inline void push_message_box(const std::string& msg){
-            push_message<LogMessageBoxMessage> (msg);
-        }
+        //TODO
+        void push_message_box(const std::string& msg);
 
-        [[noreturn]] inline void task() {
-            client_socket = socket(AF_INET, SOCK_STREAM, 0);
-            if (client_socket < 0) {
-            }
-
-            sockaddr_in server_addr;
-            server_addr.sin_family = AF_INET;
-            server_addr.sin_port = htons(8080);
-
-            inet_pton(AF_INET, "192.168.1.116", &server_addr.sin_addr);
-
-            while (connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-                LOG_ERR("没连上");
-                // 实际项目中这里最好加一个延时，避免疯狂重连
-                std::this_thread::sleep_for(std::chrono::seconds(1));
-                continue;
-            }
-
-            while (true) {
-                std::string buffer;
-                
-                {
-                    std::unique_lock<std::mutex> lock(_mtx);
-                    // 等待直到队列不为空
-                    _cv.wait(lock, [this]{ return !_q.empty(); });
-
-                    size_t count = 0;
-                    while(!_q.empty() && count < 16) {
-                        buffer += _q.front();
-                        _q.pop();
-                        count++;
-                    }
-                } // unique_lock 在此被析构，互斥锁被释放
-
-                if (buffer.empty()) {
-                    continue;
-                }
-
-                auto is_sent = send(client_socket, buffer.data(), buffer.length(), 0);
-
-                if(is_sent < 0) {
-                    LOG_ERR("发送失败");
-                    continue;
-                } 
-            }
-        }
+        [[noreturn]] void task ();
 
 };
 
 #define logger (Logger::instance())
+

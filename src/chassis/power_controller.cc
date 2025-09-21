@@ -138,13 +138,14 @@ std::array<float, 4> Manager::getControlledOutput(PowerObj *objs[4]) {
         robot_set->referee_info.game_robot_status_data.robot_id,
         robot_set->referee_info.game_robot_status_data.robot_level);
 
-{       logger.push_value("chassis.pc.sum power",  sumCmdPower);
+    {       
+        logger.push_value("chassis.pc.sum power",  sumCmdPower);
         logger.push_value("chassis.pc.max power",  maxPower);
         logger.push_value("chassis.pc.measured power",  measuredPower);
         logger.push_value("chassis.pc.cap energy",  robot_set->super_cap_info.capEnergy);
         logger.push_value("chassis.pc.robot id",  robot_set->referee_info.game_robot_status_data.robot_id);
         logger.push_value("chassis.pc.robot level",  robot_set->referee_info.game_robot_status_data.robot_level);
-}
+    }
 
     // LOG_INFO("k1 %f k2 %f k3 %f max %f\n", k1, k2, k3, maxPower);
 
@@ -196,8 +197,6 @@ std::array<float, 4> Manager::getControlledOutput(PowerObj *objs[4]) {
                 newTorqueCurrent[i] = -p->curAv / (2.0f * k2) / k0;
             }
 
-            // WARN: Not sure about this clamp
-            // newTorqueCurrent[i] = Utils::Math::clamp(newTorqueCurrent[i], p->pidMaxOutput);
             newTorqueCurrent[i] =
                 std::clamp(newTorqueCurrent[i], -p->pidMaxOutput, p->pidMaxOutput);
         }
@@ -227,7 +226,7 @@ std::array<float, 4> Manager::getControlledOutput(PowerObj *objs[4]) {
     return newTorqueCurrent; // 直接返回 std::array
 }
 
-    void Manager::powerDaemon [[noreturn]] () {
+   [[noreturn]] void Manager::powerDaemon () {
         static Math::Matrixf<2, 1> samples;
         static Math::Matrixf<2, 1> params;
         static float effectivePower = 0;
@@ -244,7 +243,7 @@ std::array<float, 4> Manager::getControlledOutput(PowerObj *objs[4]) {
             float torqueConst = 0.3 * ((float)187 / 3591);
             float k0 =
                 torqueConst * 20 / 16384;  // torque current rate of the motor, defined as Nm/Output
-            // FIXME: DEBUG SET LEVEL TO 1
+            // NOTE: DEBUG SET LEVEL TO 1
 
             size_t now = clock();
 
