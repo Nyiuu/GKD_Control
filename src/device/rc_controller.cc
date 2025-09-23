@@ -40,7 +40,7 @@ namespace Device
         logger.push_value("rc.mouse_l",  pkg.mouse_l);
         logger.push_value("rc.mouse_r",  pkg.mouse_r);
         logger.push_value("rc.key",  pkg.key);
-    } else if(delta == 100) {
+    } else if(delta == 10) {
         delta = 0;
     }
     delta++;

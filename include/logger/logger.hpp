@@ -180,6 +180,21 @@ class Logger:public Singleton<Logger>{
                 for(int i=0;i<16;i++)
                     buffer += buffers[i];
 
+                    // 在这里添加打印即将发送的数据的代码
+                std::cout << "准备发送数据 (总长度: " << buffer.length() << " 字节):" << std::endl;
+                for (size_t i = 0; i < buffer.length(); ++i) {
+                    // 使用十六进制格式打印每个字节
+                    std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(static_cast<unsigned char>(buffer[i])) << " ";
+                    // 每16个字节换行，方便查看
+                    if ((i + 1) % 16 == 0) {
+                        std::cout << std::endl;
+                    }
+                }
+                std::cout << std::dec << std::endl; // 恢复到十进制格式
+
+
+
+
                 auto is_sent = send(client_socket, buffer.data(), buffer.length(), 0);
 
                 if(is_sent < 0) {
