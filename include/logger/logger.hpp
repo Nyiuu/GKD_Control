@@ -139,8 +139,17 @@ class Logger:public Singleton<Logger>{
             _q.enqueue(message);
         }
 
+        std::map<std::string,int> cnt;
+
 
         void push_value(const std::string& name,double value){
+            cnt[name] ++;
+            if(cnt[name] % 1000 == 0){
+                printf("%s\n",name.c_str());
+            }
+
+            return;
+
             uint32_t hash = string_hash(name);
 
             if(!_registered_names.contains(name)){
