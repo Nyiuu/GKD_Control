@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <chrono>
 #include <cstdint>
+#include <ostream>
 #include <string>
 #include <map>
 #include <functional> 
@@ -156,53 +157,44 @@ class Logger:public Singleton<Logger>{
         //TODO
         void push_message_box(const std::string& msg);
 
-        [[noreturn]] void task() {
-            client_socket = socket(AF_INET, SOCK_STREAM, 0);
-            if (client_socket < 0) {
-            }
+       [[noreturn]] void task() {
 
-            sockaddr_in server_addr;
-            server_addr.sin_family = AF_INET;
-            server_addr.sin_port = htons(8080);
+    client_socket = socket(AF_INET, SOCK_DGRAM, 0); 
+    if (client_socket < 0) {
+        std::cout << "socket创建失败" << std::endl;
+    }
 
-            inet_pton(AF_INET, "192.168.1.116", &server_addr.sin_addr);
+    sockaddr_in server_addr;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(8080);
 
-            while (connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-                LOG_ERR("没连上");
-                continue;
-            }
-
-            while (true) {
-                std::vector<std::string> buffers(16);
-                std::string buffer = "";
-
-                _q.wait_dequeue_bulk(buffers.begin(),16);
-                for(int i=0;i<16;i++)
-                    buffer += buffers[i];
-
-                    // 在这里添加打印即将发送的数据的代码
-                std::cout << "准备发送数据 (总长度: " << buffer.length() << " 字节):" << std::endl;
-                for (size_t i = 0; i < buffer.length(); ++i) {
-                    // 使用十六进制格式打印每个字节
-                    std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(static_cast<unsigned char>(buffer[i])) << " ";
-                    // 每16个字节换行，方便查看
-                    if ((i + 1) % 16 == 0) {
-                        std::cout << std::endl;
-                    }
-                }
-                std::cout << std::dec << std::endl; // 恢复到十进制格式
+    inet_pton(AF_INET, "192.168.1.116", &server_addr.sin_addr);
 
 
+    while (true) {
+        std::vector<std::string> buffers(16);
+        std::string buffer = "";
 
+        _q.wait_dequeue_bulk(buffers.begin(), 16);
+        for (int i = 0; i < 16; i++)
+            buffer += buffers[i];
 
-                auto is_sent = send(client_socket, buffer.data(), buffer.length(), 0);
+        // 3. 修改 send() 为 sendto()，并传入目标地址
+        auto is_sent = sendto(
+            client_socket, 
+            buffer.data(), 
+            buffer.length(), 
+            0, 
+            (struct sockaddr *)&server_addr, 
+            sizeof(server_addr)
+        );
 
-                if(is_sent < 0) {
-                    LOG_ERR("发送失败");
-                    continue;
-                } 
-            }
+        if (is_sent < 0) {
+            LOG_ERR("发送失败");
+            continue;
         }
+    }
+}
 
 };
 
