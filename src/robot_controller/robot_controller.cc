@@ -25,7 +25,6 @@ namespace Robot
     void Robot_ctrl::start_init() {
         // NOTE: register motors here
 
-        // cv_controller_.init(robot_set);
         rc_controller.init(robot_set);
         referee.init(robot_set);
         // IFNDEF(CONFIG_SENTRY,
@@ -58,8 +57,7 @@ namespace Robot
         IFDEF(CONFIG_SENTRY, threads.emplace_back(&Gimbal::GimbalT::task, &gimbal_left));
         IFDEF(CONFIG_SENTRY, threads.emplace_back(&Gimbal::GimbalT::task, &gimbal_right));
         IFDEF(__DEBUG__, threads.emplace_back(&Logger::task, &logger));
-        // vision_thread = std::make_unique<std::thread>(&Device::Cv_controller::task,
-        // &cv_controller_);
+
     }
 
     void Robot_ctrl::join() {
