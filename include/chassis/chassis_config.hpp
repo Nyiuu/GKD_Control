@@ -14,7 +14,7 @@ namespace Chassis
         std::array<Hardware::DJIMotorConfig, 4> wheels_config;
         Pid::PidConfig chassis_follow_gimbal_pid_config{};
         Pid::PidConfig wheel_speed_pid_config{};
-        const int ControlTime{};
+        const int ControlTime{}; //控制周期
         int8_t follow_dir;
     };
 }  // namespace Chassis

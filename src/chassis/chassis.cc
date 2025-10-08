@@ -57,6 +57,7 @@ namespace Chassis
                 for (int i = 0; i < 4; i++) {
                     max_speed = std::max(max_speed, fabsf(wheel_speed[i]));
                 }
+                //TODO 增加加速度限制
                 if (max_speed > max_wheel_speed) {
                     fp32 speed_rate = max_wheel_speed / max_speed;
                     for (int i = 0; i < 4; i++) {

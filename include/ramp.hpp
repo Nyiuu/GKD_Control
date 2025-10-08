@@ -18,7 +18,7 @@ namespace UserLib
         fp32 out = 0.f;
 
        private:
-        fp32 acc = 0.f;
+        fp32 acc = 0.f; //加速度
         fp32 dt = 0.f;
     };
 

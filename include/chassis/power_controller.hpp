@@ -14,9 +14,14 @@
 #include "robot.hpp"
 #include "super_cap.hpp"
 
+#define USE_POWER_CONTROLLER TRUE
+
 // If the capacitor is plugged into the circuit, make sure you enable the super
 // cap module successfully Otherwise, it will cause unexpected behavior of the
 // RLS model
+#define USE_SUPER_CAPACITOR TRUE
+
+#define USE_REFEREE_SYSTEM_COMM TRUE
 
 #include "utils/RLS.hpp"
 
