@@ -6,6 +6,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/ip/address.hpp>
 #include <chrono>
 #include <cstdint>
 #include <ostream>
@@ -20,12 +22,16 @@
 #include <unordered_set>
 #include <utility>
 #include "singleton.hpp"
+#include <ctime>
+#include <iomanip>
+#include <boost/asio.hpp>
+#include <format>
 
-//tcp发送端初始化
+namespace asio = boost::asio;
+using asio::ip::udp;
+using error_code = boost::system::error_code;using error_code = boost::system::error_code;
 
-//入列并转换，用map存储名字
 
-//tcp发送
 
 enum class MessageType : uint8_t {
     RegisterName = 0x00,
@@ -126,85 +132,109 @@ inline uint32_t string_hash(const std::string& str) {
     return hash;
 }
 
-class Logger:public Singleton<Logger>{
-    private:
-        std::unordered_set<std::string> _registered_names;
-        moodycamel::BlockingConcurrentQueue<std::string> _q;
-        int client_socket;
-
-    public:
-        template<typename T,typename... Args>
-        inline void push_message(Args&&... args){
-            auto message = T::build(std::forward<Args>(args)...);
-            _q.enqueue(message);
-        }
-
-        std::map<std::string,int> cnt;
 
 
-        void push_value(const std::string& name,double value){
-            cnt[name] ++;
-            if(cnt[name] % 1000 == 0){
-                printf("%s\n",name.c_str());
-            }
+class Logger : public Singleton<Logger>, public std::enable_shared_from_this<Logger> {
+private:
+    std::unordered_set<std::string> _registered_names;
+    moodycamel::BlockingConcurrentQueue<std::string> _q;
 
+    asio::io_context _io_context;
+    asio::ip::udp::socket _socket;
+    asio::ip::udp::endpoint _server_endpoint;
+    std::thread _network_thread;
+    std::string _send_buffer; // 用于聚合消息的缓冲区
+
+public:
+    Logger()
+        : _socket(_io_context) {
+    }
+
+    ~Logger() {
+        stop();
+    }
+
+    void start(const std::string& ip_address, unsigned short port) {
+        error_code ec;
+        _socket.open(asio::ip::udp::v4(), ec);
+        if (ec) {
+            LOG_ERR("Socket open failed");
             return;
-
-            uint32_t hash = string_hash(name);
-
-            if(!_registered_names.contains(name)){
-                push_message<LogRegisterNameMessage>(hash,name);
-                _registered_names.insert(name);
-            }
-
-            push_message<LogUpdateValueMessage>(hash,value);
         }
 
-        // TODO
-        void push_console_message(const std::string& msg);
+        _server_endpoint = asio::ip::udp::endpoint(asio::ip::make_address(ip_address, ec), port);
+        if (ec) {
+            LOG_ERR("Invalid address");
+            return;
+        }
 
-        //TODO
-        void push_message_box(const std::string& msg);
-
-       [[noreturn]] void task() {
-
-    client_socket = socket(AF_INET, SOCK_DGRAM, 0); 
-    if (client_socket < 0) {
-        std::cout << "socket创建失败" << std::endl;
+        // 启动网络线程
+        _network_thread = std::thread([this]() {
+            do_receive_from_queue(); // 开始从队列中取数据并发送
+            _io_context.run(); // 阻塞运行io_context事件循环
+        });
     }
 
-    sockaddr_in server_addr;
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(8080);
-
-    inet_pton(AF_INET, "192.168.1.116", &server_addr.sin_addr);
-
-
-    while (true) {
-        std::vector<std::string> buffers(16);
-        std::string buffer = "";
-
-        _q.wait_dequeue_bulk(buffers.begin(), 16);
-        for (int i = 0; i < 16; i++)
-            buffer += buffers[i];
-
-        // 3. 修改 send() 为 sendto()，并传入目标地址
-        auto is_sent = sendto(
-            client_socket, 
-            buffer.data(), 
-            buffer.length(), 
-            0, 
-            (struct sockaddr *)&server_addr, 
-            sizeof(server_addr)
-        );
-
-        if (is_sent < 0) {
-            LOG_ERR("发送失败");
-            continue;
+    void stop() {
+        _io_context.stop();
+        if (_network_thread.joinable()) {
+            _network_thread.join();
         }
     }
-}
 
+    template<typename T, typename... Args>
+    inline void push_message(Args&&... args) {
+        auto message = T::build(std::forward<Args>(args)...);
+        _q.enqueue(message);
+    }
+
+    void push_value(const std::string& name, double value) {
+        uint32_t hash = string_hash(name);
+
+        if (_registered_names.find(name) == _registered_names.end()) {
+            push_message<LogRegisterNameMessage>(hash, name);
+            _registered_names.insert(name);
+        }
+
+        push_message<LogUpdateValueMessage>(hash, value);
+    }
+
+    // TODO
+    void push_console_message(const std::string& msg) {}
+
+    // TODO
+    void push_message_box(const std::string& msg) {}
+
+private:
+    void do_receive_from_queue() {
+        // 从队列中批量获取消息
+        std::vector<std::string> messages(16);
+        size_t count = _q.wait_dequeue_bulk(messages.begin(), 16);
+
+        _send_buffer.clear();
+        for (size_t i = 0; i < count; ++i) {
+            _send_buffer += messages[i];
+        }
+
+        if (!_send_buffer.empty()) {
+            // 开始异步发送
+            _socket.async_send_to(
+                asio::buffer(_send_buffer),
+                _server_endpoint,
+                [this](const error_code& ec, std::size_t bytes_transferred) {
+                    if (ec) {
+                        LOG_ERR("Send failed");
+                    }
+
+                    // 本次发送完成后，立即开始下一次的接收和发送循环
+                    do_receive_from_queue();
+                }
+            );
+        } else {
+            // 如果队列为空，则继续下一次循环
+             do_receive_from_queue();
+        }
+    }
 };
 
 #define logger (Logger::instance())

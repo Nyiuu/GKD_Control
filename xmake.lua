@@ -1,5 +1,5 @@
 add_rules("mode.debug", "mode.release")
-add_requires("serial","concurrentqueue")
+add_requires("serial","concurrentqueue", "boost")
 
 option("type")
     set_default("infantry")
