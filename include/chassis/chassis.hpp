@@ -19,9 +19,9 @@ namespace Chassis
        public:
         Chassis(const ChassisConfig& config);
         ~Chassis() = default;
-        void update_data();
+        // void update_data();
         void init(const std::shared_ptr<Robot::Robot_set>& robot);
-        void decomposition_speed();
+        void decomposition_speed(); //速度分解
         [[noreturn]] void task();
         void power_daemon(void* pvParam);
 
