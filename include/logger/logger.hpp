@@ -1,6 +1,5 @@
 #pragma once
 
-#include "utils.hpp"
 #include <concurrentqueue.h>
 #include <blockingconcurrentqueue.h>
 #include <sys/socket.h>
@@ -43,7 +42,6 @@ enum class MessageType : uint8_t {
 struct LogMessage {
     static std::string build(const std::string& data, MessageType type) {
         uint16_t package_size = static_cast<uint16_t>(data.size() + sizeof(uint16_t) + sizeof(uint8_t));
-        // = 2字节长度 + 1字节类型 + data.size()
 
         std::string res;
         res.resize(package_size);
@@ -62,15 +60,13 @@ struct LogRegisterNameMessage : public LogMessage {
     static std::string build(uint32_t id, const std::string& name) {
         uint8_t name_length = static_cast<uint8_t>(name.size());
 
-        // payload = id(4) + name_length(1) + name(n)
         std::string payload;
         payload.resize(sizeof(uint32_t) + sizeof(uint8_t) + name_length);
 
-        // 拷贝 id
         memcpy(payload.data(), &id, sizeof(id));
-        // 拷贝 name_length
+        
         payload[sizeof(id)] = static_cast<char>(name_length);
-        // 拷贝 name
+        
         memcpy(payload.data() + sizeof(id) + sizeof(uint8_t), name.data(), name_length);
 
         return LogMessage::build(payload, MessageType::RegisterName);
@@ -143,7 +139,7 @@ private:
     asio::ip::udp::socket _socket;
     asio::ip::udp::endpoint _server_endpoint;
     std::thread _network_thread;
-    std::string _send_buffer; // 用于聚合消息的缓冲区
+    std::string _send_buffer;
 
 public:
     Logger()
@@ -158,20 +154,19 @@ public:
         error_code ec;
         _socket.open(asio::ip::udp::v4(), ec);
         if (ec) {
-            LOG_ERR("Socket open failed");
+            std::cerr << ("Socket open failed") << std::endl;
             return;
         }
 
         _server_endpoint = asio::ip::udp::endpoint(asio::ip::make_address(ip_address, ec), port);
         if (ec) {
-            LOG_ERR("Invalid address");
+            std::cerr << ("Invalid address") << std::endl;
             return;
         }
 
-        // 启动网络线程
         _network_thread = std::thread([this]() {
-            do_receive_from_queue(); // 开始从队列中取数据并发送
-            _io_context.run(); // 阻塞运行io_context事件循环
+            do_receive_from_queue(); 
+            _io_context.run(); 
         });
     }
 
@@ -207,7 +202,7 @@ public:
 
 private:
     void do_receive_from_queue() {
-        // 从队列中批量获取消息
+
         std::vector<std::string> messages(16);
         size_t count = _q.wait_dequeue_bulk(messages.begin(), 16);
 
@@ -217,22 +212,21 @@ private:
         }
 
         if (!_send_buffer.empty()) {
-            // 开始异步发送
+
             _socket.async_send_to(
                 asio::buffer(_send_buffer),
                 _server_endpoint,
                 [this](const error_code& ec, std::size_t bytes_transferred) {
                     if (ec) {
-                        LOG_ERR("Send failed");
+                        std::cerr << ("Send failed") << std::endl;
                     }
-
-                    // 本次发送完成后，立即开始下一次的接收和发送循环
+                    
+                    std::cout << "send bytes:" << bytes_transferred << std::endl; 
                     do_receive_from_queue();
                 }
             );
         } else {
-            // 如果队列为空，则继续下一次循环
-             do_receive_from_queue();
+            do_receive_from_queue();
         }
     }
 };
