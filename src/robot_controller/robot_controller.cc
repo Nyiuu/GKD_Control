@@ -1,7 +1,6 @@
 #include "robot_controller.hpp"
 
 #include "io.hpp"
-#include "logger.hpp"
 #include "macro_helpers.hpp"
 #include "referee.hpp"
 #include "robot_type_config.hpp"

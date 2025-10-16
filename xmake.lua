@@ -25,8 +25,7 @@ target("GKDControl")
         "include/device",
         "include/device/referee",
         "include/gimbal",
-        "include/utils",
-        "include/logger"
+        "include/utils"
     )
     add_packages("serial","concurrentqueue")
     set_warnings("allextra")

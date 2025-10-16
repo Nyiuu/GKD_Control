@@ -3,7 +3,6 @@
 #include <iostream>
 #include <thread>
 
-#include "logger.hpp"
 #include "macro_helpers.hpp"
 #include "pid_controller.hpp"
 #include "power_controller.hpp"
@@ -137,15 +136,6 @@ std::array<float, 4> Manager::getControlledOutput(PowerObj *objs[4]) {
     //     robot_set->super_cap_info.capEnergy,
     //     robot_set->referee_info.game_robot_status_data.robot_id,
     //     robot_set->referee_info.game_robot_status_data.robot_level);
-
-    {       
-        logger.push_value("chassis.pc.sum power",  sumCmdPower);
-        logger.push_value("chassis.pc.max power",  maxPower);
-        logger.push_value("chassis.pc.measured power",  measuredPower);
-        logger.push_value("chassis.pc.cap energy",  robot_set->super_cap_info.capEnergy);
-        logger.push_value("chassis.pc.robot id",  robot_set->referee_info.game_robot_status_data.robot_id);
-        logger.push_value("chassis.pc.robot level",  robot_set->referee_info.game_robot_status_data.robot_level);
-    }
 
     // LOG_INFO("k1 %f k2 %f k3 %f max %f\n", k1, k2, k3, maxPower);
 

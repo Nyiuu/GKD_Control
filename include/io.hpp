@@ -2,10 +2,12 @@
 
 #include <string>
 #include <thread>
+#include <type_traits>
 #include <unordered_map>
 #include <utils.hpp>
 
 #include "can.hpp"
+#include "socket_interface.hpp"
 
 using CAN = IO::Can_interface;
 
@@ -52,8 +54,13 @@ namespace IO
                 throw std::runtime_error("IO error: double register device named " + device.name);
             }
             p = &device;
-            io_handles.emplace_back(std::thread([&]() { device.task(); }));
+            if constexpr (!std::is_same_v<T, Server_socket_interface>) {
+                io_handles.emplace_back(std::thread([&]() { device.task(); }));
+            }
+            
         }
+
+
     };
 
     template<typename T>

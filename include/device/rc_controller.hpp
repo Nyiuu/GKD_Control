@@ -5,7 +5,6 @@
 #include "device/deviece_base.hpp"
 #include "robot.hpp"
 #include "types.hpp"
-#include "logger.hpp"
 
 #define KEY_D 0x1
 #define KEY_A 0x2

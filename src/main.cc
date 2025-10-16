@@ -3,11 +3,8 @@
 
 #include "robot_controller.hpp"
 #include "utils.hpp"
-#include "logger.hpp"
 
 int main(int argc, char **argv) {
-
-    logger.start("192.168.1.53", 8080);
 
     Robot::Robot_ctrl robot;
 

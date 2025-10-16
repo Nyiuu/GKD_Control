@@ -2,7 +2,6 @@
 
 #include <string>
 #include <thread>
-#include "logger.hpp"
 #include "socket_interface.hpp"
 #include "robot_type_config.hpp"
 #include "user_lib.hpp"
@@ -82,11 +81,7 @@ namespace Chassis
                 static Power::PowerObj *pObjs[4] = { &objs[0], &objs[1], &objs[2], &objs[3] };
                 std::array<float, 4> cmd_power = power_manager.getControlledOutput(pObjs);
 
-                //logger
-                for (int i = 0; i < 4; ++i) {
-                   logger.push_value("chassis." + std::to_string(i), cmd_power[i]);
-                //    logger.push_console_message("<h1>111</h1>");
-                }
+               
 
                 for (int i = 0; i < 4; ++i) {
                     if(motors[i].offline()) {

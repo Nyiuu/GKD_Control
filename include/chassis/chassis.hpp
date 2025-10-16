@@ -11,7 +11,6 @@
 #include "power_controller.hpp"
 #include "robot.hpp"
 #include "types.hpp"
-#include "logger/logger.hpp"
 namespace Chassis
 {
     class Chassis
