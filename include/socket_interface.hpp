@@ -6,7 +6,6 @@
 #include <asio/co_spawn.hpp>
 #include <asio/detached.hpp>
 #include <asio/ip/udp.hpp>
-#include <asio/registered_buffer.hpp>
 #include <asio/ts/internet.hpp>
 #include <asio/use_awaitable.hpp>
 #include <asio/write.hpp>
