@@ -1,10 +1,11 @@
 #include "chassis/chassis.hpp"
 
+#include <string>
 #include <thread>
-
-#include "chassis_config.hpp"
+#include "socket_interface.hpp"
 #include "robot_type_config.hpp"
 #include "user_lib.hpp"
+#include "utils.hpp"
 
 namespace Chassis
 {
@@ -38,6 +39,8 @@ namespace Chassis
             wheels_pid[i] = Pid::PidPosition(
                 config.wheel_speed_pid_config, motors[i].data_.output_linear_velocity);
         }
+
+
     }
 
     [[noreturn]] void Chassis::task() {
@@ -53,6 +56,7 @@ namespace Chassis
                 for (int i = 0; i < 4; i++) {
                     max_speed = std::max(max_speed, fabsf(wheel_speed[i]));
                 }
+                //TODO 增加加速度限制
                 if (max_speed > max_wheel_speed) {
                     fp32 speed_rate = max_wheel_speed / max_speed;
                     for (int i = 0; i < 4; i++) {
@@ -75,9 +79,14 @@ namespace Chassis
                     objs[i].pidMaxOutput = 14000;
                 }
                 static Power::PowerObj *pObjs[4] = { &objs[0], &objs[1], &objs[2], &objs[3] };
-                float *cmd_power = power_manager.getControlledOutput(pObjs);
+                std::array<float, 4> cmd_power = power_manager.getControlledOutput(pObjs);
+
+               
 
                 for (int i = 0; i < 4; ++i) {
+                    if(motors[i].offline()) {
+                        LOG_ERR("chassis_%d offline\n", i + 1);
+                    }
                     motors[i].give_current = cmd_power[i];
                 }
             }

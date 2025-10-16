@@ -5,6 +5,7 @@
 #include "utils.hpp"
 
 int main(int argc, char **argv) {
+
     Robot::Robot_ctrl robot;
 
     robot.load_hardware();

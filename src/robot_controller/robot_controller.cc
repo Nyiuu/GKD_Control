@@ -1,6 +1,7 @@
 #include "robot_controller.hpp"
 
 #include "io.hpp"
+#include "macro_helpers.hpp"
 #include "referee.hpp"
 #include "robot_type_config.hpp"
 
@@ -23,14 +24,13 @@ namespace Robot
     void Robot_ctrl::start_init() {
         // NOTE: register motors here
 
-        // cv_controller_.init(robot_set);
         rc_controller.init(robot_set);
         referee.init(robot_set);
         // IFNDEF(CONFIG_SENTRY,
         super_cap.init(Config::super_cap_can_interface, robot_set);
         super_cap.set(true, 30);
         //);
-
+        
         chassis.init(robot_set);
         gimbal.init(robot_set);
         IFDEF(CONFIG_SENTRY, gimbal_left.init(robot_set));
@@ -55,8 +55,8 @@ namespace Robot
         threads.emplace_back(&Device::Dji_referee::task_ui, &referee);
         IFDEF(CONFIG_SENTRY, threads.emplace_back(&Gimbal::GimbalT::task, &gimbal_left));
         IFDEF(CONFIG_SENTRY, threads.emplace_back(&Gimbal::GimbalT::task, &gimbal_right));
-        // vision_thread = std::make_unique<std::thread>(&Device::Cv_controller::task,
-        // &cv_controller_);
+
+
     }
 
     void Robot_ctrl::join() {

@@ -27,7 +27,7 @@ target("GKDControl")
         "include/gimbal",
         "include/utils"
     )
-    add_packages("serial")
+    add_packages("serial","concurrentqueue")
     set_warnings("allextra")
 
     add_options("type")

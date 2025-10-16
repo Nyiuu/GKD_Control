@@ -8,21 +8,23 @@
  * All rights reserved.
  ******************************************************************************
  */
-
+//TODO:优化矩阵乘法
 #pragma once
 
 #include <cmath>
 #include <cstdint>
+#include <array>
 
 namespace Power
 {
 namespace Math
 {
 template <int _rows, int _cols, typename T = float>
-    requires(std::is_arithmetic_v<T> && _rows > 0 && _cols > 0)
+    requires(std::is_arithmetic_v<T> && _rows > 0 && _cols > 0) //编译期检查是否为算数类型
 class Matrix
 {
-  public:
+
+public:
     /**
      * @brief Constructor without input data
      * @param
@@ -474,8 +476,9 @@ class Matrix
         return res;
     }
 
-  private:
+private:
     std::array<std::array<T, _cols>, _rows> data;
+
 };
 
 template <int r, int c> using Matrixf = Matrix<r, c, float>;
