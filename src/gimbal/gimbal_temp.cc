@@ -4,6 +4,7 @@
 
 #include "UI.hpp"
 #include "gimbal/gimbal_config.hpp"
+#include "io.hpp"
 #include "macro_helpers.hpp"
 #include "robot_controller.hpp"
 #include "robot_type_config.hpp"
@@ -63,10 +64,10 @@ namespace Gimbal
         yaw_motor.enable();
         pitch_motor.enable();
 
-        IO::io<SOCKET>["AUTO_AIM_CONTROL"]->add_client(
+        IO::io_manager<SOCKET>["AUTO_AIM_CONTROL"]->add_client(
             config.header, config.auto_aim_ip, config.auto_aim_port);
 
-        IO::io<SOCKET>["AUTO_AIM_CONTROL"]->register_callback_key(
+        IO::io_manager<SOCKET>["AUTO_AIM_CONTROL"]->register_callback_key(
             config.header, [this](const Robot::Auto_aim_control &vc) {
                 LOG_INFO(
                     "socket recive %f %f %d %d\n",

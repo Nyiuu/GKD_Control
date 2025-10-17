@@ -16,6 +16,7 @@ namespace Gimbal
           yaw_motor("CAN_BULLET", 1)
 
     {
+        
     }
 
     void GimbalSentry::init(const std::shared_ptr<Robot::Robot_set>& robot) {

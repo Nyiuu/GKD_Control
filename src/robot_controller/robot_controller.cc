@@ -72,7 +72,7 @@ namespace Robot
             IO::io<SERIAL>.insert(name, baud_rate, simple_timeout);
         }
         for (auto& name : Config::SocketInitList) {
-            IO::io<SOCKET>.insert(name);
+            IO::io_manager<SOCKET>.insert(name);
         }
     }
 };  // namespace Robot
