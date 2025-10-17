@@ -151,13 +151,13 @@ namespace Robot
         bool red;
     } __attribute__((packed));
 
-    struct SendVisionControl
-    {
-        uint8_t header = 0xA6;
-        float roll;
-        float pitch;
-        float yaw;
-    } __attribute__((packed));
+    // struct SendVisionControl
+    // {
+    //     uint8_t header = 0xA6;
+    //     float roll;
+    //     float pitch;
+    //     float yaw;
+    // } __attribute__((packed));
 
     struct ReceiveNavigationInfo
     {
