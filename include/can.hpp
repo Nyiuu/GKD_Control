@@ -9,30 +9,36 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <asio.hpp>
+
+#include <asio/posix/stream_descriptor.hpp>
 #include <cstdint>
 #include <cstdlib>
 
 #include "hardware_callback.hpp"
 #include "types.hpp"
 
+typedef asio::posix::stream_descriptor can_descriptor;
+
 namespace IO
 {
     class Can_interface : public Callback_key<uint32_t, can_frame>
     {
        public:
-        Can_interface(const std::string &name);
+        Can_interface(asio::io_context& external_io_context, const std::string &name);
         ~Can_interface();
-        bool send(const can_frame &frame);
-        bool task();
-        void init(const char *can_channel);
+        asio::awaitable<void>  send(const can_frame &frame);
+        void task();
+        int init(const char *can_channel);
 
        private:
         sockaddr_can *addr;
         can_frame frame_r;
         ifreq *ifr;
         Types::debug_info_t *debug;
-        int soket_id;
-        bool init_flag;
+        can_descriptor can_descriptor_;
+
+        asio::awaitable<void> receive_loop();
 
        public:
         std::string name;

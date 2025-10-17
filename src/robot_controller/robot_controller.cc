@@ -66,7 +66,7 @@ namespace Robot
 
     void Robot_ctrl::load_hardware() {
         for (auto& name : Config::CanInitList) {
-            IO::io<CAN>.insert(name);
+            IO::io_manager<CAN>.insert(name);
         }
         for (auto& [name, baud_rate, simple_timeout] : Config::SerialInitList) {
             IO::io<SERIAL>.insert(name, baud_rate, simple_timeout);

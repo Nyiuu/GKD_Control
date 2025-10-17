@@ -6,6 +6,14 @@
 
 namespace IO
 {
+    void Server_socket_interface::task() {
+        asio::ip::udp::endpoint listen_endpoint(asio::ip::udp::v4(), port_num);
+        socket_.open(listen_endpoint.protocol());
+        socket_.bind(listen_endpoint);
+
+        asio::co_spawn(socket_.get_executor(), std::bind(&Server_socket_interface::receive_loop, this), asio::detached);
+    }   
+
     asio::awaitable<void> Server_socket_interface::receive_loop() {
         for (;;) {
             asio::ip::udp::endpoint remote_endpoint;
@@ -52,13 +60,7 @@ namespace IO
 
     }
 
-    void Server_socket_interface::task() {
-        asio::ip::udp::endpoint listen_endpoint(asio::ip::udp::v4(), port_num);
-        socket_.open(listen_endpoint.protocol());
-        socket_.bind(listen_endpoint);
 
-        asio::co_spawn(socket_.get_executor(), std::bind(&Server_socket_interface::receive_loop, this), asio::detached);
-    }
 
     Server_socket_interface::~Server_socket_interface() {
         if (socket_.is_open()) {

@@ -2,13 +2,7 @@
 #define __SOCKET_INTERFACE__
 
 #include <asio.hpp>
-#include <asio/awaitable.hpp>
-#include <asio/co_spawn.hpp>
-#include <asio/detached.hpp>
-#include <asio/ip/udp.hpp>
-#include <asio/ts/internet.hpp>
-#include <asio/use_awaitable.hpp>
-#include <asio/write.hpp>
+
 #include <unistd.h>
 #include <cstring>
 #include <map>
