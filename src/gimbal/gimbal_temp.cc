@@ -124,6 +124,7 @@ namespace Gimbal
                 exit(-1);
         }
         while (robot_set->inited != Types::Init_status::INIT_FINISH) {
+        // while(1) {
             update_data();
             if (config.gimbal_id == 2) {
                 robot_set->inited |= 1 << 1;
@@ -227,6 +228,8 @@ namespace Gimbal
             yaw_motor.data_.rotor_angle - Hardware::DJIMotor::ECD_8192_TO_RAD * config.YawOffSet);
         yaw_gyro = (std::cos(imu.pitch) * imu.yaw_rate - std::sin(imu.pitch) * imu.roll_rate);
         pitch_gyro = imu.pitch_rate;
+        // auto newYawOffSet = yaw_motor.data_.rotor_angle / Hardware::DJIMotor::ECD_8192_TO_RAD;
+        // LOG_INFO("Yawoffset:%f\n", newYawOffSet);
         // gimbal sentry follow needs
         *yaw_rela = yaw_relative;
         fake_yaw_abs = robot_set->gimbal_sentry_yaw - yaw_relative;

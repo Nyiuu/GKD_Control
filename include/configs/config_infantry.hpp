@@ -33,9 +33,9 @@ namespace Config
             Hardware::DJIMotorConfig{3508, "can1", 4, 0.075}
         },
         .chassis_follow_gimbal_pid_config = {
-            .kp =           3.f,
-            .ki =           0.001f,
-            .kd =           15.0f,
+            .kp =           2.f,
+            .ki =           0.f,
+            .kd =           10.0f,
             .max_out =      6.0f,
             .max_iout =     0.2f,
         },
@@ -96,7 +96,7 @@ namespace Config
         .gimbal_motor_dir = 1.0,
         .gimbal_id = 1,
         .ControlTime = 1,
-        .YawOffSet = 2114,
+        .YawOffSet = 5217,
         .shoot_config = {
             .left_friction_motor_config = Hardware::DJIMotorConfig{3508, "can0", 1, 0.075},
             .right_friction_motor_config = Hardware::DJIMotorConfig{3508, "can0", 2, 0.075},
