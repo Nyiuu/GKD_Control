@@ -25,26 +25,6 @@ namespace Device
         if (pkg.s1 == S1_DOWN && pkg.s2 == S2_DOWN && pkg.ch4 == ROLL_UP_MAX) {
             inited = true;
         }
-
-    // if(delta == 0) {       
-    //     logger.push_value("rc.ch0",  pkg.ch0);
-    //     logger.push_value("rc.ch1",  pkg.ch1);
-    //     logger.push_value("rc.ch2",  pkg.ch2);
-    //     logger.push_value("rc.ch3",  pkg.ch3);
-    //     logger.push_value("rc.ch4",  pkg.ch4);
-    //     logger.push_value("rc.s1",  pkg.s1);
-    //     logger.push_value("rc.s2",  pkg.s2);
-    //     logger.push_value("rc.mouse_x",  pkg.mouse_x);
-    //     logger.push_value("rc.mouse_y",  pkg.mouse_y);
-    //     logger.push_value("rc.mouse_z",  pkg.mouse_z);
-    //     logger.push_value("rc.mouse_l",  pkg.mouse_l);
-    //     logger.push_value("rc.mouse_r",  pkg.mouse_r);
-    //     logger.push_value("rc.key",  pkg.key);
-    // } else if(delta == 10) {
-    //     delta = 0;
-    // }
-    // delta++;
-
 #ifndef CONFIG_SENTRY 
         float vx = 0, vy = 0;
         float speed = 1;
@@ -133,7 +113,7 @@ namespace Device
         //     return; 
         // }
         if (inited) {
-            // LOG_INFO("rc controller ch1 %d %d %d %d\n", pkg.s1, pkg.s2, pkg.ch1, pkg.ch3);
+            LOG_INFO("rc controller ch1 %d %d %d %d\n", pkg.s1, pkg.s2, pkg.ch1, pkg.ch3);
             robot_set->vx_set = ((float)pkg.ch3 / RC_SCALE) * CHASSIS_SPEED_SCALE;
             robot_set->vy_set = ((float)pkg.ch2 / RC_SCALE) * CHASSIS_SPEED_SCALE;
 

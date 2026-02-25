@@ -231,6 +231,8 @@ namespace Gimbal
         // auto newYawOffSet = yaw_motor.data_.rotor_angle / Hardware::DJIMotor::ECD_8192_TO_RAD;
         // LOG_INFO("Yawoffset:%f\n", newYawOffSet);
         // gimbal sentry follow needs
+        // LOG_INFO("imu.pitch:%f\n", imu.pitch);
+        LOG_INFO("imu.yaw:%f\n", imu.yaw);
         *yaw_rela = yaw_relative;
         fake_yaw_abs = robot_set->gimbal_sentry_yaw - yaw_relative;
     }
