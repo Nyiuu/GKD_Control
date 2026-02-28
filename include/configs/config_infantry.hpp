@@ -19,7 +19,7 @@ namespace Config
 
     const std::vector<std::tuple<std::string, int, int>> SerialInitList = {
         { "/dev/IMU_HERO", 115200, 2000 }
-        // , { "/dev/IMU_DAIAO", 921600, 2000 }
+        , { "/dev/IMU_DAMIAO", 921600, 2000 }
     };
 
     const std::string rc_controller_serial = "/dev/IMU_HERO";
@@ -52,7 +52,8 @@ namespace Config
     };
 
     const Gimbal::GimbalConfig gimbal_config = {
-        .imu_serial_port = "/dev/IMU_HERO",
+        // .imu_serial_port = "/dev/IMU_HERO",
+        .imu_serial_port = "/dev/IMU_DAMIAO",
         .yaw_motor_config = Hardware::DJIMotorConfig(6020, "can0", 1),
         .pitch_motor_config = Hardware::DJIMotorConfig(6020, "can0", 2),
         .yaw_rate_pid_config = {

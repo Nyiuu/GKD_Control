@@ -1,6 +1,8 @@
 #include "serial_interface.hpp"
 
 #include "user_lib.hpp"
+#include <chrono>
+#include <cmath>
 
 namespace IO
 {
@@ -41,39 +43,43 @@ namespace IO
         } 
         else if (pkg_id == 3) {
             uint8_t frame_type;
-            read(&frame_type, 1); 
-            
-            uint8_t rx_buffer[19]; 
-            
-            if (frame_type == 0x02) { 
+            read(&frame_type, 1);
+
+            uint8_t rx_buffer[19];
+
+            // get current time
+            auto now_tp = std::chrono::steady_clock::now();
+            double now_s = std::chrono::duration_cast<std::chrono::duration<double>>(now_tp.time_since_epoch()).count();
+
+            if (frame_type == 0x02) {
                 size_t bytes_read = read(rx_buffer, 15);
-                
-                if (bytes_read == 15 && rx_buffer[14] == 0x0A) { 
+
+                if (bytes_read == 15 && rx_buffer[14] == 0x0A) {
                     float gyro_x, gyro_y, gyro_z;
                     memcpy(&gyro_x, &rx_buffer[0], 4);
                     memcpy(&gyro_y, &rx_buffer[4], 4);
                     memcpy(&gyro_z, &rx_buffer[8], 4);
                     
-                    imu_pkg.roll_v = gyro_x;
-                    imu_pkg.pitch_v = gyro_y;
-                    imu_pkg.yaw_v = gyro_z;
-                    
+                    imu_pkg.roll_v = -gyro_x * 1000;
+                    imu_pkg.pitch_v = -gyro_y * 1000;
+                    imu_pkg.yaw_v = -gyro_z * 1000;
+
                     callback(imu_pkg);
                 }
-            } 
-            else if (frame_type == 0x03) { 
+            }
+            else if (frame_type == 0x03) {
                 size_t bytes_read = read(rx_buffer, 15);
-                
-                if (bytes_read == 15 && rx_buffer[14] == 0x0A) { 
-                    float roll, pitch, yaw;
-                    memcpy(&roll, &rx_buffer[0], 4);
-                    memcpy(&pitch, &rx_buffer[4], 4);
-                    memcpy(&yaw, &rx_buffer[8], 4);
-                    
-                    imu_pkg.roll = roll;
-                    imu_pkg.pitch = pitch;
-                    imu_pkg.yaw = yaw;
-                    
+
+                if (bytes_read == 15 && rx_buffer[14] == 0x0A) {
+                    float roll_m, pitch_m, yaw_m;
+                    memcpy(&roll_m, &rx_buffer[0], 4);
+                    memcpy(&pitch_m, &rx_buffer[4], 4);
+                    memcpy(&yaw_m, &rx_buffer[8], 4);
+
+                    imu_pkg.roll = -roll_m;
+                    imu_pkg.pitch = -pitch_m;
+                    imu_pkg.yaw = -yaw_m;
+
                     callback(imu_pkg);
                 }
             }

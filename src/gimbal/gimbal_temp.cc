@@ -1,6 +1,11 @@
 #include "gimbal/gimbal_temp.hpp"
 
 #include <algorithm>
+#include <chrono>
+#include <fstream>
+#include <iomanip>
+#include <mutex>
+#include <sys/stat.h>
 
 #include "UI.hpp"
 #include "gimbal/gimbal_config.hpp"
@@ -11,6 +16,49 @@
 #include "types.hpp"
 #include "user_lib.hpp"
 #include "utils.hpp"
+
+namespace {
+
+std::mutex g_imu_log_mtx;
+std::once_flag g_imu_log_once;
+std::ofstream g_imu_log_ofs;
+std::chrono::steady_clock::time_point g_imu_log_t0;
+std::chrono::steady_clock::time_point g_imu_log_last;
+
+void imu_log_init() {
+    // Resolve relative to current working directory (normally project root when running).
+    ::mkdir("../../../../log", 0755);  // ignore EEXIST and other non-fatal errors
+    g_imu_log_ofs.open("../../../../log/imu.txt", std::ios::out | std::ios::trunc);
+    if (g_imu_log_ofs.is_open()) {
+        g_imu_log_ofs << "# t_s,id,pitch_rad,yaw_rad\n";
+        g_imu_log_ofs << std::fixed << std::setprecision(6);
+    }
+    g_imu_log_t0 = std::chrono::steady_clock::now();
+    g_imu_log_last = g_imu_log_t0;
+}
+
+inline void imu_log_write(int gimbal_id, float pitch_rad, float yaw_rad) {
+    std::call_once(g_imu_log_once, imu_log_init);
+    if (!g_imu_log_ofs.is_open()) {
+        return;
+    }
+
+    const auto now = std::chrono::steady_clock::now();
+    std::lock_guard<std::mutex> lk(g_imu_log_mtx);
+    // Default: ~100Hz logging (adjust if needed).
+    if (now - g_imu_log_last < std::chrono::milliseconds(10)) {
+        return;
+    }
+    g_imu_log_last = now;
+
+    const double t_s =
+        std::chrono::duration_cast<std::chrono::duration<double>>(now - g_imu_log_t0).count();
+    g_imu_log_ofs << t_s << "," << gimbal_id << "," << pitch_rad << "," << yaw_rad << "\n";
+    // Keep data visible even if the process exits unexpectedly during debug.
+    g_imu_log_ofs.flush();
+}
+}  // namespace
+
 namespace Gimbal
 {
     GimbalT::GimbalT(const GimbalConfig &config)
@@ -123,8 +171,8 @@ namespace Gimbal
             if (delta > 1000)
                 exit(-1);
         }
-        while (robot_set->inited != Types::Init_status::INIT_FINISH) {
-        // while(1) {
+        // while (robot_set->inited != Types::Init_status::INIT_FINISH) {
+        while(1) {
             update_data();
             if (config.gimbal_id == 2) {
                 robot_set->inited |= 1 << 1;
@@ -233,6 +281,9 @@ namespace Gimbal
         // gimbal sentry follow needs
         // LOG_INFO("imu.pitch:%f\n", imu.pitch);
         // LOG_INFO("imu.yaw:%f\n", imu.yaw);
+        // LOG_INFO("imu.pitch_rate:%f\n", imu.pitch_rate);
+        // LOG_INFO("imu.yaw_rate:%f\n", imu.yaw_rate);
+        imu_log_write(config.gimbal_id, imu.pitch, imu.yaw);
         *yaw_rela = yaw_relative;
         fake_yaw_abs = robot_set->gimbal_sentry_yaw - yaw_relative;
     }
