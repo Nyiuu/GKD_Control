@@ -98,9 +98,9 @@ namespace Chassis
                 /*
                 TODO功率限制需要修改，现在直接输出pidout
                 */
-                    motors[i].give_current = wheels_pid[i].out;
-                    // motors[i].give_current = cmd_power[i];
-                    // LOG_INFO("i:%d, pid:%f, cmd:%f\n", i, wheels_pid[i].out, cmd_power[i]);
+                    // motors[i].give_current = wheels_pid[i].out;
+                    motors[i].give_current = cmd_power[i];
+                    //LOG_INFO("i:%d, plan:%f, fact:%f\n", i, cmd_power[i], robot_set->super_cap_info.chassisPower);
                 }
             }
             UserLib::sleep_ms(config.ControlTime);
@@ -143,9 +143,10 @@ namespace Chassis
         }
     }
 
-        wheel_speed[0] = -vx_set + vy_set + wz_set;
-        wheel_speed[1] = vx_set + vy_set + wz_set;
+        wheel_speed[0] = -vx_set - vy_set + wz_set;
+        wheel_speed[1] = -vx_set + vy_set + wz_set;
         wheel_speed[2] = vx_set - vy_set + wz_set;
-        wheel_speed[3] = -vx_set - vy_set + wz_set;
+        wheel_speed[3] = vx_set + vy_set + wz_set;
+        
     }
 }  // namespace Chassis

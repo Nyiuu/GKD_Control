@@ -2,6 +2,7 @@
 #include "io.hpp"
 #include "serial_interface.hpp"
 #include "types.hpp"
+#include "utils.hpp"
 
 namespace Device
 {
@@ -86,6 +87,9 @@ namespace Device
             robot_set->shoot_open = SHOOT_PERMISSION_NONE;
         }
 
+        // LOG_INFO("mouse_y:%d robot_set->gimbalT_1_pitch_set:%f\n",pkg.mouse_y, robot_set->gimbalT_1_pitch_set);
+        // LOG_INFO("mouse_x:%d\n", pkg.mouse_x);
+        // LOG_INFO("pkg size: %lu\t real size: %lu\n", sizeof(Types::ReceivePacket_RC_CTRL), sizeof(pkg));
         if (!robot_set->auto_aim_status) {
             robot_set->gimbalT_1_yaw_set += pkg.mouse_x / 10000.;
             robot_set->gimbalT_1_pitch_set += pkg.mouse_y / 10000.;
@@ -113,7 +117,7 @@ namespace Device
         //     return; 
         // }
         if (inited) {
-            LOG_INFO("rc controller ch1 %d %d %d %d\n", pkg.s1, pkg.s2, pkg.ch1, pkg.ch3);
+            // LOG_INFO("rc controller ch1 %d %d %d %d\n", pkg.s1, pkg.s2, pkg.ch1, pkg.ch3);
             robot_set->vx_set = ((float)pkg.ch3 / RC_SCALE) * CHASSIS_SPEED_SCALE;
             robot_set->vy_set = ((float)pkg.ch2 / RC_SCALE) * CHASSIS_SPEED_SCALE;
 

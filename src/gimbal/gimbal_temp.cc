@@ -118,7 +118,7 @@ namespace Gimbal
         while (imu.offline() || yaw_motor.offline() || pitch_motor.offline()) {
             UserLib::sleep_ms(Config::GIMBAL_CONTROL_TIME);
             LOG_INFO(
-                "offline %d %d %d\n", imu.offline(), yaw_motor.offline(), pitch_motor.offline());
+                "offline imu:%d | yaw:%d | pitch:%d\n", imu.offline(), yaw_motor.offline(), pitch_motor.offline());
             delta++;
             if (delta > 1000)
                 exit(-1);
@@ -232,7 +232,7 @@ namespace Gimbal
         // LOG_INFO("Yawoffset:%f\n", newYawOffSet);
         // gimbal sentry follow needs
         // LOG_INFO("imu.pitch:%f\n", imu.pitch);
-        LOG_INFO("imu.yaw:%f\n", imu.yaw);
+        // LOG_INFO("imu.yaw:%f\n", imu.yaw);
         *yaw_rela = yaw_relative;
         fake_yaw_abs = robot_set->gimbal_sentry_yaw - yaw_relative;
     }

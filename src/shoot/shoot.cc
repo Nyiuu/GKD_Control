@@ -68,7 +68,7 @@ namespace Shoot
             // if(left_friction.data_.output_linear_velocity ||
             // right_friction.data_.output_linear_velocity )
             // {
-            //     //LOG_INFO("set: %f,left: %f, right: %f\n", friction_ramp.out,
+            //     LOG_INFO("set: %f,left: %f, right: %f\n", friction_ramp.out,
             //     left_friction.data_.output_linear_velocity,
             //     right_friction.data_.output_linear_velocity); std::stringstream ss;
             //      ss << "set: " << friction_ramp.out
@@ -103,7 +103,7 @@ namespace Shoot
 
             // if(robot_set->shoot_open)
             // {
-            //     //LOG_INFO("set: %f,left: %f, right: %f\n", friction_ramp.out,
+            //     LOG_INFO("set: %f,left: %f, right: %f\n", friction_ramp.out,
             //     left_friction.data_.output_linear_velocity,
             //     right_friction.data_.output_linear_velocity); std::stringstream ss; ss << "set: "
             //     << Config::CONTINUE_TRIGGER_SPEED
