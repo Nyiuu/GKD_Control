@@ -74,18 +74,17 @@ namespace IO
 
             // CH10X outputs roll/pitch/yaw in degrees and gyro in deg/s.
             // Convert gyro to the legacy unit (0.001 deg/s) expected by imu.cc.
-            constexpr float kAngleScale = 1.0f;
             constexpr float kRateScale = 1000.0f;
 
             // If the CH10X installation coordinate differs from the legacy IMU,
             // adjust these signs to match the previous coordinate convention.
             constexpr float kYawSign = 1.0f;
-            constexpr float kPitchSign = 1.0f;
+            constexpr float kPitchSign = -1.0f;
             constexpr float kRollSign = 1.0f;
 
-            out->roll = kRollSign * pkt.eul[0] * kAngleScale;
-            out->pitch = kPitchSign * pkt.eul[1] * kAngleScale;
-            out->yaw = kYawSign * pkt.eul[2] * kAngleScale;
+            out->roll = kRollSign * pkt.eul[0];
+            out->pitch = kPitchSign * pkt.eul[1];
+            out->yaw = -kYawSign * pkt.eul[2];
 
             out->roll_v = kRollSign * pkt.gyr_b[0] * kRateScale;
             out->pitch_v = kPitchSign * pkt.gyr_b[1] * kRateScale;
@@ -276,13 +275,13 @@ namespace IO
 
                     auto now = std::chrono::steady_clock::now();
                     if (now - stats.last_log > std::chrono::seconds(2)) {
-                        LOG_INFO(
-                            "IMU serial stats: legacy=%llu ch10x=%llu crc_fail=%llu no_tag=%llu header_miss=%llu\n",
-                            static_cast<unsigned long long>(stats.legacy_frames),
-                            static_cast<unsigned long long>(stats.ch10x_frames),
-                            static_cast<unsigned long long>(stats.ch10x_crc_fail),
-                            static_cast<unsigned long long>(stats.ch10x_no_tag),
-                            static_cast<unsigned long long>(stats.header_miss));
+                        // LOG_INFO(
+                        //     "IMU serial stats: legacy=%llu ch10x=%llu crc_fail=%llu no_tag=%llu header_miss=%llu\n",
+                        //     static_cast<unsigned long long>(stats.legacy_frames),
+                        //     static_cast<unsigned long long>(stats.ch10x_frames),
+                        //     static_cast<unsigned long long>(stats.ch10x_crc_fail),
+                        //     static_cast<unsigned long long>(stats.ch10x_no_tag),
+                        //     static_cast<unsigned long long>(stats.header_miss));
                         stats.last_log = now;
                     }
                 } else {

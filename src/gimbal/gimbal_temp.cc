@@ -289,7 +289,7 @@ namespace Gimbal
         // LOG_INFO("imu.yaw:%f\n", imu.yaw);
         // LOG_INFO("imu.pitch_rate:%f\n", imu.pitch_rate);
         // LOG_INFO("imu.yaw_rate:%f\n", imu.yaw_rate);
-        // imu_log_write(config.gimbal_id, imu.pitch, imu.yaw, imu.pitch_rate, imu.yaw_rate);
+        imu_log_write(config.gimbal_id, imu.pitch, imu.yaw, imu.pitch_rate, imu.yaw_rate);
         *yaw_rela = yaw_relative;
         fake_yaw_abs = robot_set->gimbal_sentry_yaw - yaw_relative;
     }
