@@ -83,11 +83,11 @@ namespace IO
             constexpr float kRollSign = 1.0f;
 
             out->roll = kRollSign * pkt.eul[0];
-            out->pitch = kPitchSign * pkt.eul[1];
+            out->pitch = -kPitchSign * pkt.eul[1];
             out->yaw = -kYawSign * pkt.eul[2];
 
-            out->roll_v = kRollSign * pkt.gyr_b[0] * kRateScale;
-            out->pitch_v = kPitchSign * pkt.gyr_b[1] * kRateScale;
+            out->roll_v = kRollSign * pkt.gyr_b[1] * kRateScale;
+            out->pitch_v = kPitchSign * pkt.gyr_b[0] * kRateScale;
             out->yaw_v = kYawSign * pkt.gyr_b[2] * kRateScale;
             return true;
         }
