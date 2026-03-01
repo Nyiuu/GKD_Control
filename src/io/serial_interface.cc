@@ -158,7 +158,7 @@ namespace IO
 
     void Serial_interface::task() {
         static ImuParseStats stats;
-        constexpr bool kCh10xRawDump = true;
+        constexpr bool kCh10xRawDump = false;
         constexpr auto kRawDumpInterval = std::chrono::milliseconds(200);
         static auto last_raw_dump = std::chrono::steady_clock::now();
         constexpr uint8_t kCh10xLenLow = 0x4C;
