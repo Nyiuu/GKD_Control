@@ -6,6 +6,8 @@
 #include <cmath>
 #include <cstdint>
 #include <cstring>
+#include <cstdio>
+#include <string>
 
 namespace IO
 {
@@ -100,6 +102,19 @@ namespace IO
             uint64_t header_miss = 0;
             std::chrono::steady_clock::time_point last_log = std::chrono::steady_clock::now();
         };
+
+        void dump_hex(const uint8_t *data, size_t len) {
+            constexpr size_t kMaxBytes = 64;
+            size_t dump_len = len < kMaxBytes ? len : kMaxBytes;
+            std::string line;
+            line.reserve(dump_len * 3);
+            char byte_buf[4];
+            for (size_t i = 0; i < dump_len; ++i) {
+                std::snprintf(byte_buf, sizeof(byte_buf), "%02X ", data[i]);
+                line.append(byte_buf);
+            }
+            LOG_INFO("IMU_CH10X raw[%zu]: %s\n", dump_len, line.c_str());
+        }
     }  // namespace
 
     Serial_interface::Serial_interface(std::string port_name, int baudrate, int simple_timeout)
@@ -143,9 +158,26 @@ namespace IO
 
     void Serial_interface::task() {
         static ImuParseStats stats;
+        constexpr bool kCh10xRawDump = true;
+        constexpr auto kRawDumpInterval = std::chrono::milliseconds(200);
+        static auto last_raw_dump = std::chrono::steady_clock::now();
         while (true) {
             try {
                 if (isOpen()) {
+                    if (kCh10xRawDump && name.find("IMU_CH10X") != std::string::npos) {
+                        size_t avail = available();
+                        if (avail > 0) {
+                            size_t to_read = std::min(avail, sizeof(buffer));
+                            read(buffer, to_read);
+                            auto now = std::chrono::steady_clock::now();
+                            if (now - last_raw_dump >= kRawDumpInterval) {
+                                dump_hex(buffer, to_read);
+                                last_raw_dump = now;
+                            }
+                        }
+                        continue;
+                    }
+
                     uint8_t head0 = 0;
                     uint8_t head1 = 0;
                     static bool have_pending = false;
