@@ -52,8 +52,9 @@ namespace Config
     };
 
     const Gimbal::GimbalConfig gimbal_config = {
-        // .imu_serial_port = "/dev/IMU_HERO",
+        // Use CH10X for yaw and HERO for pitch.
         .imu_serial_port = "/dev/IMU_CH10X",
+        .imu_serial_port_pitch = "/dev/IMU_HERO",
 
         .yaw_motor_config = Hardware::DJIMotorConfig(6020, "can0", 1),
         .pitch_motor_config = Hardware::DJIMotorConfig(6020, "can0", 2),

@@ -38,7 +38,8 @@ namespace Gimbal
         std::shared_ptr<Robot::Robot_set> robot_set;
         GimbalConfig config;
 
-        Device::IMU imu;
+        Device::IMU imu_yaw;
+        Device::IMU imu_pitch;
 
         Hardware::DJIMotor yaw_motor;
         Hardware::DJIMotor pitch_motor;

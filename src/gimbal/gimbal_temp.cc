@@ -69,7 +69,9 @@ namespace Gimbal
 {
     GimbalT::GimbalT(const GimbalConfig &config)
         : config(config),
-          imu(config.imu_serial_port),
+          imu_yaw(config.imu_serial_port),
+          imu_pitch(config.imu_serial_port_pitch.empty() ? config.imu_serial_port
+                                                        : config.imu_serial_port_pitch),
           yaw_motor(config.yaw_motor_config),
           pitch_motor(config.pitch_motor_config),
           yaw_set(nullptr),
@@ -109,11 +111,12 @@ namespace Gimbal
             yaw_absolute_pid =
                 Pid::PidRad(config.yaw_absolute_pid_config, fake_yaw_abs) >> Pid::Invert(-1),
             yaw_absolute_pid =
-                Pid::PidRad(config.yaw_absolute_pid_config, imu.yaw) >> Pid::Invert(-1));
+                Pid::PidRad(config.yaw_absolute_pid_config, imu_yaw.yaw) >> Pid::Invert(-1));
 
-        pitch_absolute_pid = Pid::PidRad(config.pitch_absolute_pid_config, imu.pitch);
+        pitch_absolute_pid = Pid::PidRad(config.pitch_absolute_pid_config, imu_pitch.pitch);
 
-        imu.enable();
+        imu_yaw.enable();
+        imu_pitch.enable();
         yaw_motor.enable();
         pitch_motor.enable();
 
@@ -169,10 +172,14 @@ namespace Gimbal
 
     void GimbalT::init_task() {
         static int delta = 0;
-        while (imu.offline() || yaw_motor.offline() || pitch_motor.offline()) {
+        while (imu_yaw.offline() || imu_pitch.offline() || yaw_motor.offline() || pitch_motor.offline()) {
             UserLib::sleep_ms(Config::GIMBAL_CONTROL_TIME);
             LOG_INFO(
-                "offline imu:%d | yaw:%d | pitch:%d\n", imu.offline(), yaw_motor.offline(), pitch_motor.offline());
+                "offline imu_yaw:%d | imu_pitch:%d | yaw:%d | pitch:%d\n",
+                imu_yaw.offline(),
+                imu_pitch.offline(),
+                yaw_motor.offline(),
+                pitch_motor.offline());
             delta++;
             if (delta > 1000)
                 exit(-1);
@@ -194,13 +201,13 @@ namespace Gimbal
             //    yaw_motor.motor_measure_.ecd);
 
             if (fabs(yaw_relative) < Config::GIMBAL_INIT_EXP &&
-                fabs(imu.pitch) < Config::GIMBAL_INIT_EXP) {
+                fabs(imu_pitch.pitch) < Config::GIMBAL_INIT_EXP) {
                 init_stop_times += 1;
             } else {
                 init_stop_times = 0;
             }
 
-            MUXDEF(CONFIG_SENTRY, *yaw_set = robot_set->gimbal_sentry_yaw, *yaw_set = imu.yaw);
+            MUXDEF(CONFIG_SENTRY, *yaw_set = robot_set->gimbal_sentry_yaw, *yaw_set = imu_yaw.yaw);
             *pitch_set = 0;
 
             if (init_stop_times >= Config::GIMBAL_INIT_STOP_TIME) {
@@ -268,8 +275,8 @@ namespace Gimbal
             // LOG_INFO("robot id % d\n", robot_set->referee_info.game_robot_status_data.robot_id);
             Robot::SendAutoAimInfo pkg;
             pkg.header = config.header;
-            MUXDEF(CONFIG_SENTRY, pkg.yaw = fake_yaw_abs, pkg.yaw = imu.yaw);
-            pkg.pitch = imu.pitch;
+            MUXDEF(CONFIG_SENTRY, pkg.yaw = fake_yaw_abs, pkg.yaw = imu_yaw.yaw);
+            pkg.pitch = imu_pitch.pitch;
             pkg.red = robot_set->referee_info.game_robot_status_data.robot_id < 100;
             IO::io<SOCKET>["AUTO_AIM_CONTROL"]->send(pkg);
 
@@ -280,8 +287,9 @@ namespace Gimbal
     void GimbalT::update_data() {
         yaw_relative = UserLib::rad_format(
             yaw_motor.data_.rotor_angle - Hardware::DJIMotor::ECD_8192_TO_RAD * config.YawOffSet);
-        yaw_gyro = (std::cos(imu.pitch) * imu.yaw_rate - std::sin(imu.pitch) * imu.roll_rate);
-        pitch_gyro = imu.pitch_rate;
+        yaw_gyro = (std::cos(imu_pitch.pitch) * imu_yaw.yaw_rate -
+                    std::sin(imu_pitch.pitch) * imu_yaw.roll_rate);
+        pitch_gyro = imu_pitch.pitch_rate;
         // auto newYawOffSet = yaw_motor.data_.rotor_angle / Hardware::DJIMotor::ECD_8192_TO_RAD;
         // LOG_INFO("Yawoffset:%f\n", newYawOffSet);
         // gimbal sentry follow needs
@@ -289,7 +297,8 @@ namespace Gimbal
         // LOG_INFO("imu.yaw:%f\n", imu.yaw);
         // LOG_INFO("imu.pitch_rate:%f\n", imu.pitch_rate);
         // LOG_INFO("imu.yaw_rate:%f\n", imu.yaw_rate);
-        imu_log_write(config.gimbal_id, imu.pitch, imu.yaw, imu.pitch_rate, imu.yaw_rate);
+        imu_log_write(
+            config.gimbal_id, imu_pitch.pitch, imu_yaw.yaw, imu_pitch.pitch_rate, imu_yaw.yaw_rate);
         *yaw_rela = yaw_relative;
         fake_yaw_abs = robot_set->gimbal_sentry_yaw - yaw_relative;
     }
