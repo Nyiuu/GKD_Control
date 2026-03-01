@@ -89,9 +89,10 @@ namespace Shoot
                     robot_set->referee_info.bullet_allowance_data.bullet_allowance_num_17_mm > 0,
                     robot_set->referee_info.bullet_allowance_data.bullet_allowance_num_17_mm > 0));
 
-            bool referee_fire_allowance =
+            bool referee_fire_allowance = 
                 (shoot_heat && remain_bullet) ||
-                !((robot_set->referee_info.game_status_data.game_progress & 0x0f) == 4);
+                !((robot_set->referee_info.game_status_data.game_progress & 0x0f) == 4) && 
+    (robot_set->auto_aim_status != 1 || robot_set->cv_fire == 1);
 
             // LOG_INFO(
             //     "referee fire allowance %d %d %d %d %d\n",
