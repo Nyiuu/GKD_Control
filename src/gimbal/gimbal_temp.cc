@@ -30,14 +30,19 @@ void imu_log_init() {
     ::mkdir("../../../../log", 0755);  // ignore EEXIST and other non-fatal errors
     g_imu_log_ofs.open("../../../../log/imu.txt", std::ios::out | std::ios::trunc);
     if (g_imu_log_ofs.is_open()) {
-        g_imu_log_ofs << "# t_s,id,pitch_rad,yaw_rad\n";
+        g_imu_log_ofs << "# t_s,id,pitch_rad,yaw_rad,pitch_rate_rad_s,yaw_rate_rad_s\n";
         g_imu_log_ofs << std::fixed << std::setprecision(6);
     }
     g_imu_log_t0 = std::chrono::steady_clock::now();
     g_imu_log_last = g_imu_log_t0;
 }
 
-inline void imu_log_write(int gimbal_id, float pitch_rad, float yaw_rad) {
+inline void imu_log_write(
+    int gimbal_id,
+    float pitch_rad,
+    float yaw_rad,
+    float pitch_rate_rad_s,
+    float yaw_rate_rad_s) {
     std::call_once(g_imu_log_once, imu_log_init);
     if (!g_imu_log_ofs.is_open()) {
         return;
@@ -53,7 +58,8 @@ inline void imu_log_write(int gimbal_id, float pitch_rad, float yaw_rad) {
 
     const double t_s =
         std::chrono::duration_cast<std::chrono::duration<double>>(now - g_imu_log_t0).count();
-    g_imu_log_ofs << t_s << "," << gimbal_id << "," << pitch_rad << "," << yaw_rad << "\n";
+    g_imu_log_ofs << t_s << "," << gimbal_id << "," << pitch_rad << "," << yaw_rad
+                  << "," << pitch_rate_rad_s << "," << yaw_rate_rad_s << "\n";
     // Keep data visible even if the process exits unexpectedly during debug.
     g_imu_log_ofs.flush();
 }
@@ -171,13 +177,13 @@ namespace Gimbal
             if (delta > 1000)
                 exit(-1);
         }
-        // while (robot_set->inited != Types::Init_status::INIT_FINISH) {
-        while(1) {
+        while (robot_set->inited != Types::Init_status::INIT_FINISH) {
+        // while(1) {
             update_data();
             if (config.gimbal_id == 2) {
                 robot_set->inited |= 1 << 1;
             }
-
+            // 1.f >> yaw_motor;
             0.f >> yaw_relative_pid >> yaw_motor;
             0.f >> pitch_absolute_pid >> pitch_motor;
             // LOG_INFO(
@@ -283,7 +289,7 @@ namespace Gimbal
         // LOG_INFO("imu.yaw:%f\n", imu.yaw);
         // LOG_INFO("imu.pitch_rate:%f\n", imu.pitch_rate);
         // LOG_INFO("imu.yaw_rate:%f\n", imu.yaw_rate);
-        imu_log_write(config.gimbal_id, imu.pitch, imu.yaw);
+        // imu_log_write(config.gimbal_id, imu.pitch, imu.yaw, imu.pitch_rate, imu.yaw_rate);
         *yaw_rela = yaw_relative;
         fake_yaw_abs = robot_set->gimbal_sentry_yaw - yaw_relative;
     }

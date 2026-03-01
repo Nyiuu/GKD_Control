@@ -19,7 +19,7 @@ namespace Config
 
     const std::vector<std::tuple<std::string, int, int>> SerialInitList = {
         { "/dev/IMU_HERO", 115200, 2000 }
-        , { "/dev/IMU_DAMIAO", 921600, 2000 }
+        // , { "/dev/IMU_DAMIAO", 921600, 2000 }
     };
 
     const std::string rc_controller_serial = "/dev/IMU_HERO";
@@ -36,7 +36,7 @@ namespace Config
         .chassis_follow_gimbal_pid_config = {
             .kp =           2.f,
             .ki =           0.f,
-            .kd =           10.0f,
+            .kd =           20.0f,
             .max_out =      6.0f,
             .max_iout =     0.2f,
         },
@@ -52,8 +52,8 @@ namespace Config
     };
 
     const Gimbal::GimbalConfig gimbal_config = {
-        // .imu_serial_port = "/dev/IMU_HERO",
-        .imu_serial_port = "/dev/IMU_DAMIAO",
+        .imu_serial_port = "/dev/IMU_HERO",
+        // .imu_serial_port = "/dev/IMU_DAMIAO",
         .yaw_motor_config = Hardware::DJIMotorConfig(6020, "can0", 1),
         .pitch_motor_config = Hardware::DJIMotorConfig(6020, "can0", 2),
         .yaw_rate_pid_config = {
@@ -80,9 +80,10 @@ namespace Config
             .max_iout =     0.0f,
         },
 				// PID POSITION ABSOLUTE 科学调参ok 3.17
+                // 手调 by dxy 2.28
         .yaw_absolute_pid_config = {
-            .kp =           8.0f,
-            .ki =           0.062f,
+            .kp =           15.0f,
+            .ki =           0.082f,
             .kd =           0.0f,
             .max_out =      60.0f,
             .max_iout =     0.0f,

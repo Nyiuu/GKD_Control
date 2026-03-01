@@ -20,7 +20,6 @@ namespace Device
         }
 
     void IMU::unpack(const Types::ReceivePacket_IMU &pkg) {
-        // 达妙和原来是反的
         yaw = UserLib::rad_format(pkg.yaw * (M_PIf / 180));
         pitch = -UserLib::rad_format(pkg.pitch * (M_PIf / 180));
         roll = UserLib::rad_format(pkg.roll * (M_PIf / 180));

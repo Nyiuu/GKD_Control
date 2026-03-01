@@ -60,9 +60,9 @@ namespace IO
                     memcpy(&gyro_y, &rx_buffer[4], 4);
                     memcpy(&gyro_z, &rx_buffer[8], 4);
                     
-                    imu_pkg.roll_v = -gyro_x * 1000;
-                    imu_pkg.pitch_v = -gyro_y * 1000;
-                    imu_pkg.yaw_v = -gyro_z * 1000;
+                    imu_pkg.roll_v = gyro_x * 100000 / 2;
+                    imu_pkg.pitch_v = gyro_y * 100000 / 2;
+                    imu_pkg.yaw_v = gyro_z * 100000 / 2;
 
                     callback(imu_pkg);
                 }
