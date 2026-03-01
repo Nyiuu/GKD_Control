@@ -20,16 +20,15 @@ namespace IO
         struct Ch10xImu91
         {
             uint8_t tag;
-            uint16_t pps_sync_stamp;
+            uint8_t id;
+            uint8_t reserved;
             int8_t temperature;
             float air_pressure;
             uint32_t system_time;
             float acc_b[3];
             float gyr_b[3];
             float mag_b[3];
-            float roll;
-            float pitch;
-            float yaw;
+            float eul[3];
             float quat[4];
         } __attribute__((packed));
 
@@ -54,8 +53,19 @@ namespace IO
                 return false;
             }
 
+            const uint8_t *pkt_ptr = nullptr;
+            for (size_t offset = 0; offset + sizeof(Ch10xImu91) <= payload_len; ++offset) {
+                if (payload[offset] == kCh10xTagFloat) {
+                    pkt_ptr = payload + offset;
+                    break;
+                }
+            }
+            if (pkt_ptr == nullptr) {
+                return false;
+            }
+
             Ch10xImu91 pkt{};
-            memcpy(&pkt, payload, sizeof(Ch10xImu91));
+            memcpy(&pkt, pkt_ptr, sizeof(Ch10xImu91));
             if (pkt.tag != kCh10xTagFloat) {
                 return false;
             }
@@ -71,13 +81,13 @@ namespace IO
             constexpr float kPitchSign = 1.0f;
             constexpr float kRollSign = 1.0f;
 
-            out->yaw = kYawSign * pkt.yaw * kAngleScale;
-            out->pitch = kPitchSign * pkt.pitch * kAngleScale;
-            out->roll = kRollSign * pkt.roll * kAngleScale;
+            out->roll = kRollSign * pkt.eul[0] * kAngleScale;
+            out->pitch = kPitchSign * pkt.eul[1] * kAngleScale;
+            out->yaw = kYawSign * pkt.eul[2] * kAngleScale;
 
-            out->yaw_v = kYawSign * pkt.gyr_b[2] * kRateScale;
-            out->pitch_v = kPitchSign * pkt.gyr_b[1] * kRateScale;
             out->roll_v = kRollSign * pkt.gyr_b[0] * kRateScale;
+            out->pitch_v = kPitchSign * pkt.gyr_b[1] * kRateScale;
+            out->yaw_v = kYawSign * pkt.gyr_b[2] * kRateScale;
             return true;
         }
     }  // namespace
@@ -125,12 +135,27 @@ namespace IO
         while (true) {
             try {
                 if (isOpen()) {
-                    uint8_t head[2];
-                    read(head, 2);
-                    if (head[0] == kLegacyHeader0 && head[1] == kLegacyHeader1) {
+                    uint8_t head0 = 0;
+                    uint8_t head1 = 0;
+                    static bool have_pending = false;
+                    static uint8_t pending = 0;
+
+                    if (have_pending) {
+                        head0 = pending;
+                        have_pending = false;
+                    } else {
+                        read(&head0, 1);
+                    }
+
+                    if (head0 != kLegacyHeader0 && head0 != kCh10xHeader0) {
+                        continue;
+                    }
+
+                    read(&head1, 1);
+                    if (head0 == kLegacyHeader0 && head1 == kLegacyHeader1) {
                         read((uint8_t *)&header, 1);
                         unpack(header);
-                    } else if (head[0] == kCh10xHeader0 && head[1] == kCh10xHeader1) {
+                    } else if (head0 == kCh10xHeader0 && head1 == kCh10xHeader1) {
                         uint8_t len_bytes[2];
                         uint8_t crc_bytes[2];
                         read(len_bytes, 2);
@@ -163,6 +188,13 @@ namespace IO
                         if (parse_ch10x_payload(buffer, payload_len, &imu_pkg)) {
                             callback(imu_pkg);
                         }
+                    } else {
+                        // If the second byte is also a potential header start, keep it.
+                        if (head1 == kLegacyHeader0 || head1 == kCh10xHeader0) {
+                            pending = head1;
+                            have_pending = true;
+                        }
+                        continue;
                     }
                 } else {
                     enumerate_ports();
