@@ -104,7 +104,7 @@ namespace IO
         };
 
         void dump_hex(const uint8_t *data, size_t len) {
-            constexpr size_t kMaxBytes = 64;
+            constexpr size_t kMaxBytes = 96;
             size_t dump_len = len < kMaxBytes ? len : kMaxBytes;
             std::string line;
             line.reserve(dump_len * 3);
@@ -161,18 +161,46 @@ namespace IO
         constexpr bool kCh10xRawDump = true;
         constexpr auto kRawDumpInterval = std::chrono::milliseconds(200);
         static auto last_raw_dump = std::chrono::steady_clock::now();
+        constexpr uint8_t kCh10xLenLow = 0x4C;
+        constexpr uint8_t kCh10xLenHigh = 0x00;
+        constexpr size_t kCh10xFrameSize = 82;  // 2(header) + 2(len) + 2(crc) + 76(payload)
+        static std::array<uint8_t, 4> ch10x_window = {};
+        static size_t ch10x_window_len = 0;
         while (true) {
             try {
                 if (isOpen()) {
                     if (kCh10xRawDump && name.find("IMU_CH10X") != std::string::npos) {
-                        size_t avail = available();
-                        if (avail > 0) {
-                            size_t to_read = std::min(avail, sizeof(buffer));
-                            read(buffer, to_read);
-                            auto now = std::chrono::steady_clock::now();
-                            if (now - last_raw_dump >= kRawDumpInterval) {
-                                dump_hex(buffer, to_read);
-                                last_raw_dump = now;
+                        uint8_t byte = 0;
+                        read(&byte, 1);
+
+                        if (ch10x_window_len < ch10x_window.size()) {
+                            ch10x_window[ch10x_window_len++] = byte;
+                        } else {
+                            ch10x_window[0] = ch10x_window[1];
+                            ch10x_window[1] = ch10x_window[2];
+                            ch10x_window[2] = ch10x_window[3];
+                            ch10x_window[3] = byte;
+                        }
+
+                        if (ch10x_window_len >= ch10x_window.size() &&
+                            ch10x_window[0] == kCh10xHeader0 &&
+                            ch10x_window[1] == kCh10xHeader1 &&
+                            ch10x_window[2] == kCh10xLenLow &&
+                            ch10x_window[3] == kCh10xLenHigh) {
+                            std::array<uint8_t, kCh10xFrameSize> frame = {};
+                            frame[0] = ch10x_window[0];
+                            frame[1] = ch10x_window[1];
+                            frame[2] = ch10x_window[2];
+                            frame[3] = ch10x_window[3];
+
+                            size_t remain = kCh10xFrameSize - 4;
+                            size_t got = read(frame.data() + 4, remain);
+                            if (got == remain) {
+                                auto now = std::chrono::steady_clock::now();
+                                if (now - last_raw_dump >= kRawDumpInterval) {
+                                    dump_hex(frame.data(), frame.size());
+                                    last_raw_dump = now;
+                                }
                             }
                         }
                         continue;
