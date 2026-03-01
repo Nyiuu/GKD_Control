@@ -90,6 +90,16 @@ namespace IO
             out->yaw_v = kYawSign * pkt.gyr_b[2] * kRateScale;
             return true;
         }
+
+        struct ImuParseStats
+        {
+            uint64_t legacy_frames = 0;
+            uint64_t ch10x_frames = 0;
+            uint64_t ch10x_crc_fail = 0;
+            uint64_t ch10x_no_tag = 0;
+            uint64_t header_miss = 0;
+            std::chrono::steady_clock::time_point last_log = std::chrono::steady_clock::now();
+        };
     }  // namespace
 
     Serial_interface::Serial_interface(std::string port_name, int baudrate, int simple_timeout)
@@ -132,6 +142,7 @@ namespace IO
     }
 
     void Serial_interface::task() {
+        static ImuParseStats stats;
         while (true) {
             try {
                 if (isOpen()) {
@@ -148,6 +159,7 @@ namespace IO
                     }
 
                     if (head0 != kLegacyHeader0 && head0 != kCh10xHeader0) {
+                        stats.header_miss++;
                         continue;
                     }
 
@@ -155,6 +167,7 @@ namespace IO
                     if (head0 == kLegacyHeader0 && head1 == kLegacyHeader1) {
                         read((uint8_t *)&header, 1);
                         unpack(header);
+                        stats.legacy_frames++;
                     } else if (head0 == kCh10xHeader0 && head1 == kCh10xHeader1) {
                         uint8_t len_bytes[2];
                         uint8_t crc_bytes[2];
@@ -182,11 +195,15 @@ namespace IO
                         crc = crc16_ccitt(crc, header_and_len.data(), header_and_len.size());
                         crc = crc16_ccitt(crc, buffer, payload_len);
                         if (crc != frame_crc) {
+                            stats.ch10x_crc_fail++;
                             continue;
                         }
 
                         if (parse_ch10x_payload(buffer, payload_len, &imu_pkg)) {
                             callback(imu_pkg);
+                            stats.ch10x_frames++;
+                        } else {
+                            stats.ch10x_no_tag++;
                         }
                     } else {
                         // If the second byte is also a potential header start, keep it.
@@ -195,6 +212,18 @@ namespace IO
                             have_pending = true;
                         }
                         continue;
+                    }
+
+                    auto now = std::chrono::steady_clock::now();
+                    if (now - stats.last_log > std::chrono::seconds(2)) {
+                        LOG_INFO(
+                            "IMU serial stats: legacy=%llu ch10x=%llu crc_fail=%llu no_tag=%llu header_miss=%llu\n",
+                            static_cast<unsigned long long>(stats.legacy_frames),
+                            static_cast<unsigned long long>(stats.ch10x_frames),
+                            static_cast<unsigned long long>(stats.ch10x_crc_fail),
+                            static_cast<unsigned long long>(stats.ch10x_no_tag),
+                            static_cast<unsigned long long>(stats.header_miss));
+                        stats.last_log = now;
                     }
                 } else {
                     enumerate_ports();
