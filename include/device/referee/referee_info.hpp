@@ -18,6 +18,7 @@ namespace Referee
         uint16_t bullet_allowance_num_17_mm;
         uint16_t bullet_allowance_num_42_mm;
         uint16_t coin_remaining_num;
+        uint16_t projectile_allowance_fortress; 
     };
 
     struct GameRobotStatus
@@ -37,7 +38,6 @@ namespace Referee
     {
         uint16_t chassis_power_buffer;
         uint16_t shooter_id_1_17_mm_cooling_heat;
-        uint16_t shooter_id_2_17_mm_cooling_heat;
         uint16_t shooter_id_1_42_mm_cooling_heat;
     };
 }  // namespace Referee

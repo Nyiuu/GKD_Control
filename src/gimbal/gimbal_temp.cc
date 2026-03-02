@@ -190,9 +190,9 @@ namespace Gimbal
             if (config.gimbal_id == 2) {
                 robot_set->inited |= 1 << 1;
             }
-            // 1.f >> yaw_motor;
-            0.f >> yaw_relative_pid >> yaw_motor;
-            0.f >> pitch_absolute_pid >> pitch_motor;
+            1.f >> yaw_motor;
+            // 0.f >> yaw_relative_pid >> yaw_motor;
+            // 0.f >> pitch_absolute_pid >> pitch_motor;
             // LOG_INFO(
             //    "imu : %6f %6f %6f %6d\n",
             //    imu.yaw,
@@ -296,7 +296,7 @@ namespace Gimbal
         // LOG_INFO("imu.pitch:%f\n", imu.pitch);
         // LOG_INFO("imu.yaw:%f\n", imu.yaw);
         // LOG_INFO("imu.pitch_rate:%f\n", imu.pitch_rate);
-        // LOG_INFO("imu.yaw_rate:%f\n", imu.yaw_rate);
+        // LOG_INFO("imu.yaw_rate:%f\n", imu_yaw.yaw_rate);
         imu_log_write(
             config.gimbal_id, imu_pitch.pitch, imu_yaw.yaw, imu_pitch.pitch_rate, imu_yaw.yaw_rate);
         *yaw_rela = yaw_relative;
