@@ -84,9 +84,9 @@ namespace Config
 				// PID POSITION ABSOLUTE 科学调参ok 3.17
                 // 手调 by dxy 2.28
         .yaw_absolute_pid_config = {
-            .kp =           14.0f,
-            .ki =           0.062f,
-            .kd =           20.0f,
+            .kp =           13.0f,
+            .ki =           0.022f,
+            .kd =           0.0f,
             .max_out =      60.0f,
             .max_iout =     0.0f,
         },
