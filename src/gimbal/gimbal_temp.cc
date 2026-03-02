@@ -190,9 +190,12 @@ namespace Gimbal
             if (config.gimbal_id == 2) {
                 robot_set->inited |= 1 << 1;
             }
-            1.f >> yaw_motor;
-            // 0.f >> yaw_relative_pid >> yaw_motor;
-            // 0.f >> pitch_absolute_pid >> pitch_motor;
+            // delta++;
+            //  if (delta > 10000)
+                // exit(-1);
+            // 1.f >> yaw_motor;
+            0.f >> yaw_relative_pid >> yaw_motor;
+            0.f >> pitch_absolute_pid >> pitch_motor;
             // LOG_INFO(
             //    "imu : %6f %6f %6f %6d\n",
             //    imu.yaw,

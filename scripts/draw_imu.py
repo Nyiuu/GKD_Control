@@ -117,6 +117,7 @@ def main():
     ax_angle.set_ylabel(f"angle ({unit})")
     ax_angle.legend(loc="upper right")
     ax_angle.grid(True)
+    #ax_angle.set_ylim (top=3, bottom=1)
 
     if has_rate and ax_rate is not None:
         ax_rate.plot(t_s, pitch_rate, label=f"pitch_rate ({rate_unit})", color="tab:green", alpha=0.9)
