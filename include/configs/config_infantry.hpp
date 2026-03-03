@@ -34,9 +34,9 @@ namespace Config
             Hardware::DJIMotorConfig{3508, "can1", 4, 0.075}
         },
         .chassis_follow_gimbal_pid_config = {
-            .kp =           2.f,
-            .ki =           0.f,
-            .kd =           20.0f,
+            .kp =           2.0f,
+            .ki =           0.0f,
+            .kd =           10.0f,
             .max_out =      6.0f,
             .max_iout =     0.2f,
         },
@@ -60,7 +60,7 @@ namespace Config
         .pitch_motor_config = Hardware::DJIMotorConfig(6020, "can0", 2),
         .yaw_rate_pid_config = {
             .kp =           16668.f,
-            .ki =           250.f,
+            .ki =           234.f,
             .kd =           200.f,
             .max_out =      30000.0f,
             .max_iout =     15000.0f,
@@ -75,17 +75,25 @@ namespace Config
         },
 				// PID POSITION RELATIVE
         .yaw_relative_pid_config ={
-            .kp =           14.0f,
-            .ki =           0.1f,
-            .kd =           20.f,
+            .kp =           10.0f,
+            .ki =           0.0f,
+            .kd =           0.3f,
             .max_out =      10.0f,
             .max_iout =     0.0f,
         },
 				// PID POSITION ABSOLUTE 科学调参ok 3.17
                 // 手调 by dxy 2.28
-        .yaw_absolute_pid_config = {
-            .kp =           13.0f,
-            .ki =           0.022f,
+        // .yaw_absolute_pid_config = {
+        //     .kp =           13.0f,
+        //     .ki =           0.022f,
+        //     .kd =           0.0f,
+        //     .max_out =      60.0f,
+        //     .max_iout =     0.0f,
+        // },
+
+         .yaw_absolute_pid_config = {
+            .kp =           8.0f,
+            .ki =           0.062f,
             .kd =           0.0f,
             .max_out =      60.0f,
             .max_iout =     0.0f,
