@@ -175,11 +175,11 @@ namespace Gimbal
         while (imu_yaw.offline() || imu_pitch.offline() || yaw_motor.offline() || pitch_motor.offline()) {
             UserLib::sleep_ms(Config::GIMBAL_CONTROL_TIME);
             LOG_INFO(
-                "offline imu_yaw:%d | imu_pitch:%d | yaw:%d | pitch:%d\n",
-                imu_yaw.offline(),
-                imu_pitch.offline(),
-                yaw_motor.offline(),
-                pitch_motor.offline());
+                "status imu_yaw:%s | imu_pitch:%s | yaw:%s | pitch:%s\n",
+                (imu_yaw.offline() == 1) ? "off" : "on",
+                (imu_pitch.offline() == 1) ? "off" : "on",
+                (yaw_motor.offline() == 1) ? "off" : "on",
+                (pitch_motor.offline() == 1) ? "off" : "on");
             delta++;
             if (delta > 1000)
                 exit(-1);
@@ -228,8 +228,6 @@ namespace Gimbal
         while (true) {
             update_data();
             // LOG_INFO("%d: yaw set %f, imu yaw %f\n", config.header, *yaw_set, imu.yaw);
-            // logger.push_value("gimbal.yaw.set", (double)*yaw_set);
-            // logger.push_value("gimbal.yaw.imu", (double)imu.yaw);
             if (robot_set->mode == Types::ROBOT_MODE::ROBOT_NO_FORCE) {
                 yaw_motor.give_current = 0;
                 pitch_motor.give_current = 0;
@@ -281,7 +279,10 @@ namespace Gimbal
             MUXDEF(CONFIG_SENTRY, pkg.yaw = fake_yaw_abs, pkg.yaw = imu_yaw.yaw);
             pkg.pitch = imu_pitch.pitch;
             pkg.red = robot_set->referee_info.game_robot_status_data.robot_id < 100;
+            // LOG_INFO("%s\n", (pkg.red == 1) ? "red" : "blue" );
             IO::io<SOCKET>["AUTO_AIM_CONTROL"]->send(pkg);
+
+
 
             UserLib::sleep_ms(config.ControlTime);
         }
