@@ -126,7 +126,7 @@ namespace Device
                     power_heat_data.shooter_id_1_17_mm_cooling_heat = readU16LE(data + 10);
                     power_heat_data.shooter_id_1_42_mm_cooling_heat = readU16LE(data + 12);
                     parsed = true;
-                    LOG_INFO("gimbal power:%d\n", robot_set->referee_info.power_heat_data.shooter_id_1_17_mm_cooling_heat);
+                    // LOG_INFO("gimbal power:%d\n", robot_set->referee_info.power_heat_data.shooter_id_1_17_mm_cooling_heat);
 
                 }
                 break;

@@ -37,7 +37,7 @@ void imu_log_init() {
     g_imu_log_last = g_imu_log_t0;
 }
 
-inline void imu_log_write(
+void imu_log_write(
     int gimbal_id,
     float pitch_rad,
     float yaw_rad,
@@ -175,7 +175,7 @@ namespace Gimbal
         while (imu_yaw.offline() || imu_pitch.offline() || yaw_motor.offline() || pitch_motor.offline()) {
             UserLib::sleep_ms(Config::GIMBAL_CONTROL_TIME);
             LOG_INFO(
-                "status imu_yaw:%s | imu_pitch:%s | yaw:%s | pitch:%s\n",
+                "status: imu_yaw:%s | imu_pitch:%s | yaw:%s | pitch:%s\n",
                 (imu_yaw.offline() == 1) ? "off" : "on",
                 (imu_pitch.offline() == 1) ? "off" : "on",
                 (yaw_motor.offline() == 1) ? "off" : "on",
