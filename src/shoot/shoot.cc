@@ -45,6 +45,15 @@ namespace Shoot
         auto timest = std::chrono::steady_clock::now();
         bool isJamFlag = false;
         while (true) {
+            if(!robot_set->referee_info.game_robot_status_data.mains_power_shooter_output) {
+                trigger.set_zero();
+                left_friction.set_zero();
+                right_friction.set_zero();
+                if (!friction_ramp.out) {
+                    friction_ramp.out = 0;
+                }
+                continue;
+            }
             // LOG_INFO("%d\n", trigger.motor_measure_.given_current);
             if (robot_set->mode == Types::ROBOT_MODE::ROBOT_NO_FORCE) {
                 left_friction.set(0);
@@ -102,17 +111,17 @@ namespace Shoot
             //     robot_set->referee_info.power_heat_data.shooter_id_1_17_mm_cooling_heat,
             //     robot_set->referee_info.game_robot_status_data.shooter_cooling_limit);
 
-            // if(robot_set->shoot_open)
-            // {
-            //     LOG_INFO("set: %f,left: %f, right: %f\n", friction_ramp.out,
-            //     left_friction.data_.output_linear_velocity,
-            //     right_friction.data_.output_linear_velocity); std::stringstream ss; ss << "set: "
-            //     << Config::CONTINUE_TRIGGER_SPEED
-            //     << ", trigger: " << trigger.data_.output_angular_velocity
-            //     << "\n";
-            //     std::string log_content = ss.str();
-            //     logger.into_txt("../../../../log/trigger_log.txt", log_content);
-            // }
+            if(robot_set->shoot_open)
+            {
+                LOG_INFO("set: %f,left: %f, right: %f\n", friction_ramp.out,
+                left_friction.data_.output_linear_velocity,
+                right_friction.data_.output_linear_velocity); std::stringstream ss; ss << "set: "
+                << Config::CONTINUE_TRIGGER_SPEED
+                << ", trigger: " << trigger.data_.output_angular_velocity
+                << "\n";
+                std::string log_content = ss.str();
+                logger.into_txt("../../../../log/trigger_log.txt", log_content);
+            }
 
             if (robot_set->mode == Types::ROBOT_MODE::ROBOT_NO_FORCE ||
                 !(robot_set->shoot_open & gimbal_id) || !referee_fire_allowance ||
