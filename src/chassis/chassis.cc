@@ -45,9 +45,9 @@ namespace Chassis
 
     [[noreturn]] void Chassis::task() {
         std::jthread power_daemon(&Power::Manager::powerDaemon, &power_manager);
-        while (true) {
+        while (true) {  
             decomposition_speed();
-            //LOG_INFO("chassis.wheel_speed: %f, %f, %f, %f\n", wheel_speed[0], wheel_speed[1], wheel_speed[2], wheel_speed[3]);
+            // LOG_INFO("chassis.wheel_speed: %f, %f, %f, %f\n", wheel_speed[0], wheel_speed[1], wheel_speed[2], wheel_speed[3]);
             if (robot_set->mode == Types::ROBOT_MODE::ROBOT_NO_FORCE) {
                 for (auto &motor : motors) {
                     motor.set(0.f);
@@ -96,8 +96,8 @@ namespace Chassis
                 /*
                 TODO功率限制需要修改，现在直接输出pidout
                 */
-                    // motors[i].give_current = wheels_pid[i].out;
-                    motors[i].give_current = cmd_power[i];
+                    motors[i].give_current = wheels_pid[i].out;
+                    // motors[i].give_current = cmd_power[i];
                     //LOG_INFO("i:%d, plan:%f, fact:%f\n", i, cmd_power[i], robot_set->super_cap_info.chassisPower);
                 }
             }

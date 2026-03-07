@@ -204,16 +204,16 @@ std::array<float, 4> Manager::getControlledOutput(PowerObj *objs[4]) {
         newCmdPower += newTorqueCurrent[i] * k0 * p->curAv + fabs(p->curAv) * k1 +
                        newTorqueCurrent[i] * k0 * newTorqueCurrent[i] * k0 * k2 + k3 / 4.0f;
     }
-    LOG_INFO(
-        "sumPower: %f, NewCMDPower power: %f, measuredPower: %f, capEnergy: %d\n",
-        sumPowerRequired,
-        newCmdPower,
-        robot_set->super_cap_info.chassisPower,
-        robot_set->super_cap_info.capEnergy);
+    // LOG_INFO(
+    //     "sumPower: %f, NewCMDPower power: %f, measuredPower: %f, capEnergy: %d\n",
+    //     sumPowerRequired,
+    //     newCmdPower,
+    //     robot_set->super_cap_info.chassisPower,
+    //     robot_set->super_cap_info.capEnergy);
 
     //      #endif
 
-    return newTorqueCurrent; // 直接返回 std::array
+    return newTorqueCurrent; 
 }
 
    [[noreturn]] void Manager::powerDaemon () {
