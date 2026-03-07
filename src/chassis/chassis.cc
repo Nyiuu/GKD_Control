@@ -143,29 +143,55 @@ namespace Chassis
             vy_set = -sin_yaw * robot_set->vx_set + cos_yaw * robot_set->vy_set;
 
             if (robot_set->wz_set == 0.f) {  
-                if (last_wz_direction != 0.f) {  
-                    fp32 current_angle = MUXDEF(  
-                        CONFIG_SENTRY,  
-                        robot_set->gimbal_sentry_yaw_reletive,  
-                        robot_set->gimbalT_1_yaw_reletive);  
-                    if (fabs(current_angle) > 0.1f && fabs(current_angle) < 0.6f) {  
-                        wz_set = last_wz_direction - 0.5;    
-                    }else if(fabs(current_angle) > 0.6f){
-                        wz_set = last_wz_direction;
-                    } 
-                    else {  
+                bool recover_handled = false;
+                if (robot_set->chassis_recover_mode) {
+                    fp32 current_angle = MUXDEF(
+                        CONFIG_SENTRY,
+                        robot_set->gimbal_sentry_yaw_reletive,
+                        robot_set->gimbalT_1_yaw_reletive);
+
+                    if (fabs(current_angle) > 0.1f) {
+                        chassis_angle_pid.set(0.f);
+                        if (chassis_angle_pid.out > 0.f) {
+                            wz_set = 1.f;
+                        } else if (chassis_angle_pid.out < 0.f) {
+                            wz_set = -1.f;
+                        } else {
+                            wz_set = 0.f;
+                        }
+                        recover_handled = true;
+                    } else {
+                        robot_set->chassis_recover_mode = false;
+                        last_wz_direction = 0.f;
+                    }
+                }
+
+                if (!recover_handled) {
+                    if (last_wz_direction != 0.f) {  
+                        fp32 current_angle = MUXDEF(  
+                            CONFIG_SENTRY,  
+                            robot_set->gimbal_sentry_yaw_reletive,  
+                            robot_set->gimbalT_1_yaw_reletive);  
+                        if (fabs(current_angle) > 0.1f && fabs(current_angle) < 0.6f) {  
+                            wz_set = last_wz_direction - 0.5;    
+                        }else if(fabs(current_angle) > 0.6f){
+                            wz_set = last_wz_direction;
+                        } 
+                        else {  
+                            chassis_angle_pid.set(0.f);  
+                            wz_set = chassis_angle_pid.out;  
+                            last_wz_direction = 0.f;   
+                        }                     
+                    } else {  
                         chassis_angle_pid.set(0.f);  
                         wz_set = chassis_angle_pid.out;  
-                        last_wz_direction = 0.f;   
-                    }                     
-                } else {  
-                    chassis_angle_pid.set(0.f);  
-                    wz_set = chassis_angle_pid.out;  
-            }  
-        } else {  
+                    }
+                }
+            } else {  
             wz_set = robot_set->wz_set;  
+            robot_set->chassis_recover_mode = false;
             last_wz_direction = wz_set > 0 ? 1.0f : -1.0f; 
-        }
+            }
     }
 
         wheel_speed[0] = -vx_set - vy_set + wz_set;
