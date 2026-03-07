@@ -6,6 +6,7 @@ class Controller {
 public:
     float out = 0.f;
     virtual void set(float x) = 0;
+    virtual void clean() {}
     virtual ~Controller() = default;
 };
 
@@ -47,6 +48,7 @@ public:
     ControllerList(ControllerList &&left, ControllerList &&right);
 
     void set(float v) override;
+    void clean() override;
 };
 
 ControllerList operator>>(const ControllerList &c1, const ControllerList &c2);

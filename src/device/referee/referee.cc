@@ -168,11 +168,11 @@ namespace Device
                 robot_set->spin_state,
                 ((float)robot_set->super_cap_info.capEnergy / 250) * 100);
 
-             LOG_INFO(
-                "status: gimbal:%s | chassis:%s | shooter:%s\n",
-                (robot_set->referee_info.game_robot_status_data.mains_power_gimbal_output == 0) ? "off" : "on",
-                (robot_set->referee_info.game_robot_status_data.mains_power_chassis_output == 0) ? "off" : "on",
-                (robot_set->referee_info.game_robot_status_data.mains_power_shooter_output == 0) ? "off" : "on");
+            //  LOG_INFO(
+            //     "status: gimbal:%s | chassis:%s | shooter:%s\n",
+            //     (robot_set->referee_info.game_robot_status_data.mains_power_gimbal_output == 0) ? "off" : "on",
+            //     (robot_set->referee_info.game_robot_status_data.mains_power_chassis_output == 0) ? "off" : "on",
+            //     (robot_set->referee_info.game_robot_status_data.mains_power_shooter_output == 0) ? "off" : "on");
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
     }

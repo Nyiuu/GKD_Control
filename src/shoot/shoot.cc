@@ -52,6 +52,7 @@ namespace Shoot
                 if (!friction_ramp.out) {
                     friction_ramp.out = 0;
                 }
+                UserLib::sleep_ms(Config::SHOOT_CONTROL_TIME);
                 continue;
             }
             // LOG_INFO("%d\n", trigger.motor_measure_.given_current);
@@ -74,20 +75,20 @@ namespace Shoot
             left_friction.set(-friction_ramp.out);
             right_friction.set(friction_ramp.out);
 
-            // if(left_friction.data_.output_linear_velocity ||
-            // right_friction.data_.output_linear_velocity )
-            // {
-            //     LOG_INFO("set: %f,left: %f, right: %f\n", friction_ramp.out,
-            //     left_friction.data_.output_linear_velocity,
-            //     right_friction.data_.output_linear_velocity); std::stringstream ss;
-            //      ss << "set: " << friction_ramp.out
-            //     << ", left: " << left_friction.data_.output_linear_velocity
-            //     << ", right: " << right_friction.data_.output_linear_velocity
-            //     << "\n";
-            //     std::string log_content = ss.str();
-            //     logger.into_txt("../../../../log/fric_log.txt", log_content);
+            if(left_friction.data_.output_linear_velocity ||
+            right_friction.data_.output_linear_velocity )
+            {
+                LOG_INFO("set: %f,left: %f, right: %f\n", friction_ramp.out,
+                left_friction.data_.output_linear_velocity,
+                right_friction.data_.output_linear_velocity); std::stringstream ss;
+                 ss << "set: " << friction_ramp.out
+                << ", left: " << left_friction.data_.output_linear_velocity
+                << ", right: " << right_friction.data_.output_linear_velocity
+                << "\n";
+                std::string log_content = ss.str();
+                logger.into_txt("../../../../log/fric_log.txt", log_content);
 
-            // }
+            }
             bool shoot_heat = true;
 
             bool remain_bullet = MUXDEF(
@@ -111,17 +112,17 @@ namespace Shoot
             //     robot_set->referee_info.power_heat_data.shooter_id_1_17_mm_cooling_heat,
             //     robot_set->referee_info.game_robot_status_data.shooter_cooling_limit);
 
-            if(robot_set->shoot_open)
-            {
-                LOG_INFO("set: %f,left: %f, right: %f\n", friction_ramp.out,
-                left_friction.data_.output_linear_velocity,
-                right_friction.data_.output_linear_velocity); std::stringstream ss; ss << "set: "
-                << Config::CONTINUE_TRIGGER_SPEED
-                << ", trigger: " << trigger.data_.output_angular_velocity
-                << "\n";
-                std::string log_content = ss.str();
-                logger.into_txt("../../../../log/trigger_log.txt", log_content);
-            }
+            // if(robot_set->shoot_open)
+            // {
+            //     LOG_INFO("set: %f,left: %f, right: %f\n", friction_ramp.out,
+            //     left_friction.data_.output_linear_velocity,
+            //     right_friction.data_.output_linear_velocity); std::stringstream ss; ss << "set: "
+            //     << Config::CONTINUE_TRIGGER_SPEED
+            //     << ", trigger: " << trigger.data_.output_angular_velocity
+            //     << "\n";
+            //     std::string log_content = ss.str();
+            //     logger.into_txt("../../../../log/trigger_log.txt", log_content);
+            // }
 
             if (robot_set->mode == Types::ROBOT_MODE::ROBOT_NO_FORCE ||
                 !(robot_set->shoot_open & gimbal_id) || !referee_fire_allowance ||

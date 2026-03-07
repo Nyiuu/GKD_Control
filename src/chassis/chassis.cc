@@ -44,16 +44,41 @@ namespace Chassis
     }
 
     [[noreturn]] void Chassis::task() {
+        static int delta = 0;
         std::jthread power_daemon(&Power::Manager::powerDaemon, &power_manager);
-        while (true) {  
+        while (true) {
+            LOG_INFO("%d\n",delta++);  
+            if (!robot_set->referee_info.game_robot_status_data.mains_power_chassis_output) {
+                for (auto &motor : motors) {
+                    motor.set_zero();
+                }
+
+                for (int i = 0; i < 4; i++) {
+                    wheels_pid[i].clean();
+                    wheel_speed[i] = 0.f;
+                }
+                chassis_angle_pid.clean();
+
+                vx_set = 0.f;
+                vy_set = 0.f;
+                wz_set = 0.f;
+                last_wz_direction = 0.f;
+                robot_set->spin_state = false;
+
+                UserLib::sleep_ms(config.ControlTime);
+                continue;
+            }
             decomposition_speed();
             // LOG_INFO("chassis.wheel_speed: %f, %f, %f, %f\n", wheel_speed[0], wheel_speed[1], wheel_speed[2], wheel_speed[3]);
-                        
-            
             if (robot_set->mode == Types::ROBOT_MODE::ROBOT_NO_FORCE) {
                 for (auto &motor : motors) {
-                    motor.set(0.f);
+                    motor.set_zero();
                 }
+                for (int i = 0; i < 4; ++i) {
+                    wheels_pid[i].clean();
+                }
+                chassis_angle_pid.clean();
+                robot_set->spin_state = false;
             } else {
                 fp32 max_speed = 0.f;
                 for (int i = 0; i < 4; i++) {
@@ -91,9 +116,9 @@ namespace Chassis
                 // }
 
                 for (int i = 0; i < 4; ++i) {
-                    if(motors[i].offline()) {
+                    if (motors[i].offline()) {
                         LOG_ERR("chassis_%d offline\n", i + 1);
-                        exit(-1);
+                        // exit(-1);
                     }
                 /*
                 TODO功率限制需要修改，现在直接输出pidout
