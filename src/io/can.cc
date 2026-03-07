@@ -83,7 +83,7 @@ namespace IO
                 can_channel_.c_str(),
                 send_fail_count_,
                 errno);
-            exit(-1);
+            // exit(-1);
         }
         return false;
     }

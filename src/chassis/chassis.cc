@@ -44,10 +44,8 @@ namespace Chassis
     }
 
     [[noreturn]] void Chassis::task() {
-        static int delta = 0;
         std::jthread power_daemon(&Power::Manager::powerDaemon, &power_manager);
-        while (true) {
-            LOG_INFO("%d\n",delta++);  
+        while (true) { 
             if (!robot_set->referee_info.game_robot_status_data.mains_power_chassis_output) {
                 for (auto &motor : motors) {
                     motor.set_zero();
@@ -64,6 +62,8 @@ namespace Chassis
                 wz_set = 0.f;
                 last_wz_direction = 0.f;
                 robot_set->spin_state = false;
+
+                robot_set->chassis_recover_mode = true;
 
                 UserLib::sleep_ms(config.ControlTime);
                 continue;
