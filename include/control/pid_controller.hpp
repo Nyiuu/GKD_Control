@@ -33,7 +33,7 @@ namespace Pid
         ~PidPosition() override = default;
         explicit PidPosition(const PidConfig &config, fp32 &ref) : PidConfig(config), ref(ref) {}
         void set(fp32 set_v) override;
-        void clean();
+        void clean() override;
 
     public:
         fp32 Pout = 0.f;

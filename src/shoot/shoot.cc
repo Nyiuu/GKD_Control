@@ -45,6 +45,16 @@ namespace Shoot
         auto timest = std::chrono::steady_clock::now();
         bool isJamFlag = false;
         while (true) {
+            if(!robot_set->referee_info.game_robot_status_data.mains_power_shooter_output) {
+                trigger.set_zero();
+                left_friction.set_zero();
+                right_friction.set_zero();
+                if (!friction_ramp.out) {
+                    friction_ramp.out = 0;
+                }
+                UserLib::sleep_ms(Config::SHOOT_CONTROL_TIME);
+                continue;
+            }
             // LOG_INFO("%d\n", trigger.motor_measure_.given_current);
             if (robot_set->mode == Types::ROBOT_MODE::ROBOT_NO_FORCE) {
                 left_friction.set(0);
@@ -68,7 +78,7 @@ namespace Shoot
             // if(left_friction.data_.output_linear_velocity ||
             // right_friction.data_.output_linear_velocity )
             // {
-            //     //LOG_INFO("set: %f,left: %f, right: %f\n", friction_ramp.out,
+            //     LOG_INFO("set: %f,left: %f, right: %f\n", friction_ramp.out,
             //     left_friction.data_.output_linear_velocity,
             //     right_friction.data_.output_linear_velocity); std::stringstream ss;
             //      ss << "set: " << friction_ramp.out
@@ -79,6 +89,7 @@ namespace Shoot
             //     logger.into_txt("../../../../log/fric_log.txt", log_content);
 
             // }
+            
             bool shoot_heat = true;
 
             bool remain_bullet = MUXDEF(
@@ -89,9 +100,10 @@ namespace Shoot
                     robot_set->referee_info.bullet_allowance_data.bullet_allowance_num_17_mm > 0,
                     robot_set->referee_info.bullet_allowance_data.bullet_allowance_num_17_mm > 0));
 
-            bool referee_fire_allowance =
+            bool referee_fire_allowance = 
                 (shoot_heat && remain_bullet) ||
-                !((robot_set->referee_info.game_status_data.game_progress & 0x0f) == 4);
+                !((robot_set->referee_info.game_status_data.game_progress & 0x0f) == 4) && 
+                (robot_set->auto_aim_status != 1 || robot_set->cv_fire == 1);
 
             // LOG_INFO(
             //     "referee fire allowance %d %d %d %d %d\n",
@@ -103,7 +115,7 @@ namespace Shoot
 
             // if(robot_set->shoot_open)
             // {
-            //     //LOG_INFO("set: %f,left: %f, right: %f\n", friction_ramp.out,
+            //     LOG_INFO("set: %f,left: %f, right: %f\n", friction_ramp.out,
             //     left_friction.data_.output_linear_velocity,
             //     right_friction.data_.output_linear_velocity); std::stringstream ss; ss << "set: "
             //     << Config::CONTINUE_TRIGGER_SPEED

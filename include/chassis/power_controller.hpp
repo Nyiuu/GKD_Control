@@ -1,7 +1,20 @@
 /**
  * @file PowerController.hpp
  * @version 2.0
- * @note The estimated power formula: P = τΩ + k1|Ω| + k2τ^2
+ *
+ * @note
+ * 功率模型（单轮）:
+ *   P_wheel ≈ τ * ω + k1 * |ω| + k2 * τ^2 + k3 / 4
+ * 其中:
+ *   τ: 电机输出扭矩（由电流指令估算）
+ *   ω: 电机角速度
+ *   k1: 与粘性阻尼/机械损耗相关
+ *   k2: 与铜损/电流平方相关
+ *   k3: 与整车基础损耗相关（4 轮均分）
+ *
+ * 本模块做两件事：
+ * 1) 用上式估计底盘功率并在线更新参数(k1,k2)
+ * 2) 当总功率超限时，对四轮电流指令进行再分配，优先保证控制误差大的轮子
  */
 #pragma once
 
@@ -30,20 +43,21 @@
 namespace Power
 {
 
-    constexpr static float refereeFullBuffSet = 60.0f; // 裁判系统满功率能量缓冲目标值
-    constexpr static float refereeBaseBuffSet = 50.0f; // 裁判系统基础功率能量缓冲目标值
-    constexpr static float capFullBuffSet = 250.0f; // 超级电容满功率能量缓冲目标值
-    constexpr static float capBaseBuffSet = 100.0f; // 超级电容基础功率能量缓冲目标值
-    constexpr static float error_powerDistribution_set = 20.0f; //功率分配算法的误差阈值
-    constexpr static float prop_powerDistribution_set = 15.0f; // 功率分配算法的比例阈值
+    // 以下为能量环/功率分配阈值，单位与对应反馈一致
+    constexpr static float refereeFullBuffSet = 60.0f;   // 裁判系统“满功率模式”缓冲目标
+    constexpr static float refereeBaseBuffSet = 50.0f;   // 裁判系统“保守模式”缓冲目标
+    constexpr static float capFullBuffSet = 250.0f;      // 超级电容“满功率模式”缓冲目标
+    constexpr static float capBaseBuffSet = 100.0f;      // 超级电容“保守模式”缓冲目标
+    constexpr static float error_powerDistribution_set = 20.0f; // 误差优先权重切换上阈值
+    constexpr static float prop_powerDistribution_set = 15.0f;  // 比例优先权重切换下阈值
 
     // constexpr float MIN_MAXPOWER_CONFIGURED                   = 15.0f;
-    constexpr float MAX_CAP_POWER_OUT = 300.0f; // 超级电容最大输出功率
-    constexpr float CAP_OFFLINE_ENERGY_RUNOUT_POWER_THRESHOLD = 43.0f; // 电容离线时能量耗尽的功率阈值
-    constexpr float CAP_OFFLINE_ENERGY_TARGET_POWER = 37.0f; // 电容离线时的目标功率
-    constexpr float MAX_POEWR_REFEREE_BUFF = 60.0f; // 裁判系统最大功率缓冲
-    constexpr float REFEREE_GG_COE = 0.95f; // 裁判系统挂了的功率系数
-    constexpr float CAP_REFEREE_BOTH_GG_COE = 0.85f; // 电容和裁判系统都挂了时的功率系数
+    constexpr float MAX_CAP_POWER_OUT = 300.0f;                    // 超级电容可额外释放的最大功率
+    constexpr float CAP_OFFLINE_ENERGY_RUNOUT_POWER_THRESHOLD = 43.0f; // 电容离线时保底功率上限阈值
+    constexpr float CAP_OFFLINE_ENERGY_TARGET_POWER = 37.0f;       // 电容离线时建议目标功率
+    constexpr float MAX_POEWR_REFEREE_BUFF = 60.0f;                // 裁判系统缓冲上限
+    constexpr float REFEREE_GG_COE = 0.95f;                        // 裁判离线时保守系数
+    constexpr float CAP_REFEREE_BOTH_GG_COE = 0.85f;               // 裁判+电容都离线时保守系数
 
     /**
      * @brief The Power Limit and max HP enumeration attributed by division, chassis
@@ -75,10 +89,11 @@ namespace Power
     struct PowerObj
     {
        public:
-        float pidOutput;     // torque current command, [-maxOutput, maxOutput], no unit
-        float curAv;         // Measured angular velocity, [-maxAv, maxAv], rad/s
-        float setAv;         // target angular velocity, [-maxAv, maxAv], rad/s
-        float pidMaxOutput;  // pid max output
+        // 来自底盘速度环的数据（每个轮子一份）
+        float pidOutput;     // 速度环输出的电流指令（DJI原始量纲）
+        float curAv;         // 当前角速度(rad/s)
+        float setAv;         // 目标角速度(rad/s)
+        float pidMaxOutput;  // 电流指令饱和上限（DJI原始量纲）
     };
 
     struct Manager
@@ -115,31 +130,37 @@ namespace Power
         std::deque<Hardware::DJIMotor> &motors;
         Division division;
 
-        float powerBuff;
-        float fullBuffSet;
-        float baseBuffSet;
-        float fullMaxPower;
-        float baseMaxPower;
+        // 能量环状态
+        float powerBuff;      // 当前能量反馈（经过 sqrt 变换后的“缓冲状态”）
+        float fullBuffSet;    // 满功率模式能量目标
+        float baseBuffSet;    // 基础功率模式能量目标
+        float fullMaxPower;   // 满功率模式计算得到的最大允许功率
+        float baseMaxPower;   // 基础功率模式计算得到的最大允许功率
 
-        float powerUpperLimit;
-        float powerLowerLimit;
-        float refereeMaxPower;
+        // 功率上下限
+        float powerUpperLimit; // 当前可配置上限
+        float powerLowerLimit; // 当前可配置下限
+        float refereeMaxPower; // 来自裁判/电容反馈的基础功率上限
 
-        float userConfiguredMaxPower;
+        // 用户配置与外部回调
+        float userConfiguredMaxPower; // 用户请求的功率上限（最终仍会被系统夹紧）
         float (*callback)(void);
 
-        float measuredPower;
-        float estimatedPower;
-        float estimatedCapEnergy;
+        // 功率估计观测量
+        float measuredPower;      // 实测功率（优先取电容反馈）
+        float estimatedPower;     // 模型估计功率
+        float estimatedCapEnergy; // 估计电容能量
 
-        float k1;
-        float k2;
-        float k3;
+        // 在线辨识参数（功率模型）
+        float k1; // 速度损耗项系数
+        float k2; // 电流平方损耗项系数
+        float k3; // 常量损耗项
 
         size_t lastUpdateTick;
 
         Math::RLS<2> rls;
 
+        // 能量环（本质是对 powerBuff -> buffSet 的 PD 控制）
         ControllerList powerPD_base;
         ControllerList powerPD_full;
 
@@ -154,7 +175,7 @@ namespace Power
         [[noreturn]] void powerDaemon (); //电源守护进程
     };
 
-#define POWER_PD_KP 50.0f
+#define POWER_PD_KP 50.0f // 能量环 P 增益（D 在配置中给出）
     const typename Pid::PidConfig powerPD_base_pid_config{
         POWER_PD_KP, 0.0f, 0.2f, MAX_CAP_POWER_OUT, 0.0f,
     };

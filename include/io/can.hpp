@@ -33,6 +33,9 @@ namespace IO
         Types::debug_info_t *debug;
         int soket_id;
         bool init_flag;
+        std::string can_channel_;
+        uint32_t send_fail_count_;
+        static constexpr uint32_t kSendRecoverThreshold = 2000;
 
        public:
         std::string name;

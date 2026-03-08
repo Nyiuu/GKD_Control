@@ -2,6 +2,7 @@
 #include "io.hpp"
 #include "serial_interface.hpp"
 #include "types.hpp"
+#include "utils.hpp"
 
 namespace Device
 {
@@ -22,28 +23,29 @@ namespace Device
     }
 
     void Rc_Controller::unpack(const Types::ReceivePacket_RC_CTRL &pkg) {
+        static bool wz_key_pressed_last = false;
+        static bool friction_key_pressed_last = false;
+
+       
         if (pkg.s1 == S1_DOWN && pkg.s2 == S2_DOWN && pkg.ch4 == ROLL_UP_MAX) {
             inited = true;
+        } 
+
+        if (!robot_set->referee_info.game_robot_status_data.mains_power_chassis_output) {
+            robot_set->wz_set = 0;
+            robot_set->spin_state = false;
+            wz_key_pressed_last = false;            
         }
 
-    // if(delta == 0) {       
-    //     logger.push_value("rc.ch0",  pkg.ch0);
-    //     logger.push_value("rc.ch1",  pkg.ch1);
-    //     logger.push_value("rc.ch2",  pkg.ch2);
-    //     logger.push_value("rc.ch3",  pkg.ch3);
-    //     logger.push_value("rc.ch4",  pkg.ch4);
-    //     logger.push_value("rc.s1",  pkg.s1);
-    //     logger.push_value("rc.s2",  pkg.s2);
-    //     logger.push_value("rc.mouse_x",  pkg.mouse_x);
-    //     logger.push_value("rc.mouse_y",  pkg.mouse_y);
-    //     logger.push_value("rc.mouse_z",  pkg.mouse_z);
-    //     logger.push_value("rc.mouse_l",  pkg.mouse_l);
-    //     logger.push_value("rc.mouse_r",  pkg.mouse_r);
-    //     logger.push_value("rc.key",  pkg.key);
-    // } else if(delta == 10) {
-    //     delta = 0;
-    // }
-    // delta++;
+        if (!robot_set->referee_info.game_robot_status_data.mains_power_shooter_output) {
+            robot_set->friction_open = false;
+             robot_set->friction_real_state = false;
+            robot_set->shoot_open = SHOOT_PERMISSION_NONE;
+            robot_set->cv_fire = false;
+            friction_key_pressed_last = false;
+        }
+
+
 
 #ifndef CONFIG_SENTRY 
         float vx = 0, vy = 0;
@@ -66,31 +68,34 @@ namespace Device
         robot_set->vy_set = vy * speed;
 
         if (pkg.key) {
-            LOG_INFO("key : %d\n", pkg.key);
+            // LOG_INFO("key : %d\n", pkg.key);
         }
 
-        static bool wz_key_pressed_last = false;
-        static bool friction_key_pressed_last = false;
 
         // 切换自旋状态
-        if (pkg.key & KEY_R) {
-            if (!wz_key_pressed_last) {
-                robot_set->wz_set = 1 - robot_set->wz_set;
-            }
+        if (robot_set->referee_info.game_robot_status_data.mains_power_chassis_output) {
+            if (pkg.key & KEY_R) {
+                if (!wz_key_pressed_last) {
+                    robot_set->wz_set = 1 - robot_set->wz_set;
+                }
             wz_key_pressed_last = true;
-        } else {
-            wz_key_pressed_last = false;
+            } else {
+                wz_key_pressed_last = false;
+            }
         }
 
         // 切换摩擦轮状态
-        if (pkg.key & KEY_F) {
-            if (!friction_key_pressed_last) {
-                robot_set->friction_open = !robot_set->friction_open;
+        if (robot_set->referee_info.game_robot_status_data.mains_power_shooter_output) {
+            if (pkg.key & KEY_F) {
+                if (!friction_key_pressed_last) {
+                    robot_set->friction_open = !robot_set->friction_open;
+                }
+                friction_key_pressed_last = true;
+            } else {
+                friction_key_pressed_last = false;
             }
-            friction_key_pressed_last = true;
-        } else {
-            friction_key_pressed_last = false;
         }
+
 
 
         if (pkg.mouse_r || (pkg.s1 == S1_DOWN && pkg.s2 == S2_UP)) {
@@ -106,9 +111,12 @@ namespace Device
             robot_set->shoot_open = SHOOT_PERMISSION_NONE;
         }
 
+        // LOG_INFO("mouse_y:%d robot_set->gimbalT_1_pitch_set:%f\n",pkg.mouse_y, robot_set->gimbalT_1_pitch_set);
+        // LOG_INFO("mouse_x:%d\n", pkg.mouse_x);
+        // LOG_INFO("pkg size: %lu\t real size: %lu\n", sizeof(Types::ReceivePacket_RC_CTRL), sizeof(pkg));
         if (!robot_set->auto_aim_status) {
             robot_set->gimbalT_1_yaw_set += pkg.mouse_x / 10000.;
-            robot_set->gimbalT_1_pitch_set += pkg.mouse_y / 10000.;
+            robot_set->gimbalT_1_pitch_set -= pkg.mouse_y / 10000.;
             robot_set->gimbalT_1_pitch_set =
                 std::clamp(robot_set->gimbalT_1_pitch_set, -0.3f, 0.3f); 
         }
@@ -119,6 +127,7 @@ namespace Device
 #endif
 
         static bool use_key = false;
+
         if (pkg.key & KEY_PRESS) {
             use_key = true;
         }

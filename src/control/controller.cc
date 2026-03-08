@@ -52,6 +52,13 @@ void ControllerList::set(const float v) {
     }
 }
 
+void ControllerList::clean() {
+    out = 0.f;
+    for (const auto &ptr : list) {
+        ptr->clean();
+    }
+}
+
 ControllerList operator>>(const ControllerList &c1, const ControllerList &c2) {
     return ControllerList{c1, c2};
 }

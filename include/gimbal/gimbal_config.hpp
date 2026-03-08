@@ -9,6 +9,7 @@ namespace Gimbal
     struct GimbalConfig
     {
         std::string imu_serial_port;
+        std::string imu_serial_port_pitch;
         Hardware::DJIMotorConfig yaw_motor_config;
         Hardware::DJIMotorConfig pitch_motor_config;
         Pid::PidConfig yaw_rate_pid_config{};

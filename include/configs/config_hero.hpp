@@ -51,6 +51,7 @@ namespace Config
 
     const Gimbal::GimbalConfig gimbal_config = {
         .imu_serial_port = "/dev/IMU_HERO",
+        .imu_serial_port_pitch = "/dev/IMU_HERO",
         .yaw_motor_config = Hardware::DJIMotorConfig(6020, "CAN_GIMBAL", 3),
         .pitch_motor_config = Hardware::DJIMotorConfig(3508, "CAN_GIMBAL", 1, 0.075),
         .yaw_rate_pid_config = {

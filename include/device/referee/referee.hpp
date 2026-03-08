@@ -30,7 +30,7 @@ namespace Device
         int rx_len_;
 
        private:
-        int unpack(uint8_t *rx_data);
+        int unpack(uint8_t *rx_data, int remaining_len);
         void publishCapacityData();
 
         const int k_frame_length_ = 128, k_header_length_ = 5, k_cmd_id_length_ = 2,

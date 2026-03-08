@@ -18,7 +18,8 @@ namespace Config
     const std::vector<std::string> SocketInitList = { "AUTO_AIM_CONTROL" };
 
     const std::vector<std::tuple<std::string, int, int>> SerialInitList = {
-        { "/dev/IMU_HERO", 115200, 2000 }
+        { "/dev/IMU_HERO", 115200, 2000 },
+        { "/dev/IMU_CH10X", 921600, 2000 }
     };
 
     const std::string rc_controller_serial = "/dev/IMU_HERO";
@@ -33,9 +34,9 @@ namespace Config
             Hardware::DJIMotorConfig{3508, "can1", 4, 0.075}
         },
         .chassis_follow_gimbal_pid_config = {
-            .kp =           3.f,
-            .ki =           0.001f,
-            .kd =           15.0f,
+            .kp =           2.0f,
+            .ki =           0.0f,
+            .kd =           10.0f,
             .max_out =      6.0f,
             .max_iout =     0.2f,
         },
@@ -51,7 +52,10 @@ namespace Config
     };
 
     const Gimbal::GimbalConfig gimbal_config = {
-        .imu_serial_port = "/dev/IMU_HERO",
+        // Use CH10X for yaw and HERO for pitch.
+        .imu_serial_port = "/dev/IMU_CH10X",
+        .imu_serial_port_pitch = "/dev/IMU_HERO",
+
         .yaw_motor_config = Hardware::DJIMotorConfig(6020, "can0", 1),
         .pitch_motor_config = Hardware::DJIMotorConfig(6020, "can0", 2),
         .yaw_rate_pid_config = {
@@ -78,7 +82,16 @@ namespace Config
             .max_iout =     0.0f,
         },
 				// PID POSITION ABSOLUTE 科学调参ok 3.17
-        .yaw_absolute_pid_config = {
+                // 手调 by dxy 2.28
+        // .yaw_absolute_pid_config = {
+        //     .kp =           13.0f,
+        //     .ki =           0.022f,
+        //     .kd =           0.0f,
+        //     .max_out =      60.0f,
+        //     .max_iout =     0.0f,
+        // },
+
+         .yaw_absolute_pid_config = {
             .kp =           8.0f,
             .ki =           0.062f,
             .kd =           0.0f,
@@ -96,7 +109,7 @@ namespace Config
         .gimbal_motor_dir = 1.0,
         .gimbal_id = 1,
         .ControlTime = 1,
-        .YawOffSet = 2114,
+        .YawOffSet = 5217,
         .shoot_config = {
             .left_friction_motor_config = Hardware::DJIMotorConfig{3508, "can0", 1, 0.075},
             .right_friction_motor_config = Hardware::DJIMotorConfig{3508, "can0", 2, 0.075},
