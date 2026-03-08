@@ -123,8 +123,8 @@ namespace Chassis
                 /*
                 TODO功率限制需要修改，现在直接输出pidout
                 */
-                    motors[i].give_current = wheels_pid[i].out;
-                    // motors[i].give_current = cmd_power[i];
+                    // motors[i].give_current = wheels_pid[i].out;
+                    motors[i].give_current = cmd_power[i];
                     //LOG_INFO("i:%d, plan:%f, fact:%f\n", i, cmd_power[i], robot_set->super_cap_info.chassisPower);
                 }
             }

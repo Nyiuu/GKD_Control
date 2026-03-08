@@ -68,7 +68,7 @@ namespace Device
         robot_set->vy_set = vy * speed;
 
         if (pkg.key) {
-            LOG_INFO("key : %d\n", pkg.key);
+            // LOG_INFO("key : %d\n", pkg.key);
         }
 
 
